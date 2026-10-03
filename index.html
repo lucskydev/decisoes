@@ -1978,6 +1978,7 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
         <div class="header-actions">
           <span class="save-status" id="saveStatus" role="status" aria-live="polite"></span>
           <button type="button" class="header-action-btn" id="btnAuth" title="Entrar para salvar seus dados no Supabase">🔐 Entrar</button>
+          <button type="button" class="header-action-btn" id="btnMigrateImages" title="Envia ao Supabase as fotos que estão guardadas dentro dos dados" disabled>☁️ Fotos para o Supabase</button>
           <button type="button" class="header-action-btn" id="btnExportData" title="Baixar todas as análises em um arquivo JSON">
             ⬇️ Exportar dados
           </button>
@@ -4283,6 +4284,11 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
     }
 
     function updateAuthButton() {
+      const mig = document.getElementById('btnMigrateImages');
+      if (mig) {
+        mig.disabled = !sbUser;
+        mig.title = sbUser ? 'Envia ao Supabase as fotos que estão guardadas dentro dos dados' : 'Entre na sua conta para enviar as fotos ao Supabase';
+      }
       const b = document.getElementById('btnAuth');
       if (!b) return;
       if (sbUser) {
@@ -4369,7 +4375,88 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
       await persistToCloud();
     }
 
+    // Lista as fotos guardadas dentro dos dados (data URL) em todas as análises
+    function collectEmbeddedImages(analyses) {
+      const out = [];
+      const add = img => { if (img && typeof img.url === 'string' && img.url.startsWith('data:')) out.push(img); };
+      analyses.forEach(a => {
+        const d = (a && a.data) || {};
+        (d.vehicles || []).forEach(v => { if (v && v.images) { add(v.images.main); add(v.images.detail); } });
+        (d.ads || []).forEach(ad => add(ad && ad.image));
+      });
+      return out;
+    }
+
+    let migratingImages = false;
+
+    // Envia ao Storage as fotos embutidas de TODAS as análises e troca pelo endereço público
+    async function migrateEmbeddedImages() {
+      if (migratingImages) return;
+      if (!sb || !sbUser) {
+        showAlert('Entre na sua conta (botão 🔐 Entrar) para enviar as fotos ao Supabase.');
+        return;
+      }
+      syncActive();
+      const pending = collectEmbeddedImages(store.analyses);
+      if (!pending.length) {
+        showAlert('Nenhuma foto precisa ser transferida: todas já estão no Supabase.');
+        return;
+      }
+      showConfirm(
+        `Transferir ${pending.length} foto(s) de todas as análises para o Supabase Storage? Os dados ficam bem mais leves. Fotos que falharem continuam como estão.`,
+        async () => {
+          migratingImages = true;
+          const btn = document.getElementById('btnMigrateImages');
+          if (btn) btn.disabled = true;
+          let ok = 0, fail = 0, lastErr = '';
+          const sent = new Map(); // mesma foto repetida é enviada uma única vez
+          for (let i = 0; i < pending.length; i++) {
+            const img = pending[i];
+            setSaveStatus(`☁️ Transferindo fotos… ${i + 1}/${pending.length}`);
+            try {
+              const original = img.url;
+              if (sent.has(original)) {
+                const c = sent.get(original);
+                img.id = c.id; img.url = c.url; ok++;
+                continue;
+              }
+              const blob = await (await fetch(original)).blob();
+              const ext = blob.type === 'image/png' ? 'png' : blob.type === 'image/webp' ? 'webp' : 'jpg';
+              const path = `${sbUser.id}/${newAnalysisId()}.${ext}`;
+              const { error } = await sb.storage.from(SB_BUCKET).upload(path, blob, {
+                contentType: blob.type || 'image/jpeg', cacheControl: '31536000'
+              });
+              if (error) throw error;
+              const { data } = sb.storage.from(SB_BUCKET).getPublicUrl(path);
+              img.id = path; img.url = data.publicUrl;
+              sent.set(original, { id: path, url: data.publicUrl });
+              ok++;
+            } catch (err) {
+              fail++;
+              lastErr = err && err.message ? err.message : String(err);
+            }
+          }
+          renderAll();
+          if (ok && cloudReady) {
+            persistDirty = true;
+            await persistToCloud();
+          } else {
+            setSaveStatus(sbUser ? '☁️ Salvo no Supabase' : '');
+          }
+          migratingImages = false;
+          if (btn) btn.disabled = !sbUser;
+          showAlert(
+            `${ok} foto(s) transferida(s) para o Supabase.` +
+            (fail ? `\n${fail} falharam e continuam como estavam (último erro: ${lastErr}). Clique no botão de novo para tentar outra vez.` : '')
+          );
+        },
+        'Transferir'
+      );
+    }
+
     async function initSupabase() {
+      document.getElementById('btnMigrateImages')?.addEventListener('click', migrateEmbeddedImages);
+      updateAuthButton();
       document.getElementById('btnAuth')?.addEventListener('click', async () => {
         if (!supabaseConfigured()) {
           showAlert('O Supabase ainda não foi configurado. Preencha o arquivo config.js com a URL e a chave anon do seu projeto (veja o README).');
