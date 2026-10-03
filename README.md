@@ -12,7 +12,7 @@ Página estática (um único `index.html`) publicada no **GitHub Pages**, com da
 
 ## Configuração
 
-Já feita neste repositório (projeto Supabase "radios"):
+Já feita neste repositório (projeto Supabase "sistemas"):
 
 - `supabase-setup.sql` aplicado: tabela `decisoes_estado`, regras RLS e bucket `decisoes-imagens`.
 - `config.js` preenchido com a URL e a chave *anon* do projeto.
@@ -20,7 +20,7 @@ Já feita neste repositório (projeto Supabase "radios"):
 Falta apenas:
 
 1. **GitHub → Settings → Pages**: Source = *Deploy from a branch*, branch `main`, pasta `/ (root)`.
-2. Abrir `https://lucskydev.github.io/decisoes/` e entrar com um usuário do projeto (pode ser o mesmo do app Notas) ou criar outro em **Supabase → Authentication → Users → Add user** (marcando "Auto Confirm User").
+2. Abrir `https://lucskydev.github.io/decisoes/` e entrar com um usuário criado em **Supabase → Authentication → Users → Add user** (marcando "Auto Confirm User"). O projeto "sistemas" começa sem usuários.
 3. Opcional, para uso pessoal: em **Authentication → Sign In / Providers**, desativar "Allow new users to sign up".
 
 > A chave *anon* é pública por design. Nunca use a `service_role` neste projeto.
