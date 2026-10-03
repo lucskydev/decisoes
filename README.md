@@ -10,14 +10,18 @@ Página estática (um único `index.html`) publicada no **GitHub Pages**, com da
 - Os dados são protegidos por **RLS**: cada usuário só enxerga e altera a própria linha.
 - **Exportar/Importar** JSON continua disponível como backup manual.
 
-## Configuração (uma vez)
+## Configuração
 
-1. **Supabase → SQL Editor**: cole e execute `supabase-setup.sql`.
-2. **Supabase → Authentication → Users → Add user**: crie seu usuário (e-mail + senha, marcando "Auto Confirm User").
-3. **Supabase → Authentication → Sign In / Providers**: desative "Allow new users to sign up" (uso pessoal).
-4. **Supabase → Project Settings → API**: copie a *Project URL* e a chave *anon public*, e cole em `config.js`.
-5. **GitHub → Settings → Pages**: Source = *Deploy from a branch*, branch `main`, pasta `/ (root)`.
-6. Abra `https://SEU-USUARIO.github.io/NOME-DO-REPOSITORIO/` e entre com o usuário criado.
+Já feita neste repositório (projeto Supabase "radios"):
+
+- `supabase-setup.sql` aplicado: tabela `decisoes_estado`, regras RLS e bucket `decisoes-imagens`.
+- `config.js` preenchido com a URL e a chave *anon* do projeto.
+
+Falta apenas:
+
+1. **GitHub → Settings → Pages**: Source = *Deploy from a branch*, branch `main`, pasta `/ (root)`.
+2. Abrir `https://lucskydev.github.io/decisoes/` e entrar com um usuário do projeto (pode ser o mesmo do app Notas) ou criar outro em **Supabase → Authentication → Users → Add user** (marcando "Auto Confirm User").
+3. Opcional, para uso pessoal: em **Authentication → Sign In / Providers**, desativar "Allow new users to sign up".
 
 > A chave *anon* é pública por design. Nunca use a `service_role` neste projeto.
 
