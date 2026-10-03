@@ -915,12 +915,6 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sistema auxiliar de tomada de decisões</title>
-  <!-- Chart.js Core & datalabels plugin -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"
-    onerror="let s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js';document.head.appendChild(s)"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"
-    onerror="console.warn('datalabels plugin failed to load')"></script>
-
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
     onerror="console.warn('supabase-js não carregou; usando só armazenamento local')"></script>
   <script src="config.js" onerror="console.warn('config.js não encontrado; usando só armazenamento local')"></script>
@@ -1386,74 +1380,17 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
     .vehicle-empty { color: var(--on-surface-variant, rgba(0,0,0,0.55)); font-size: 13px; }
     .field-full { grid-column: 1 / -1; }
 
-    /* Aba Despesas */
-    .metric-toggle { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-
-    .metric-btn {
-      background: var(--surface-dim, #f2f0f0);
-      color: var(--on-surface, #000000);
-      border: 1px solid var(--stroke-default, #e3e3e3);
-      padding: 6px 14px;
-      border-radius: var(--r-full, 999px);
-      font-family: var(--ff-sans, sans-serif);
-      font-size: 13px;
-      cursor: pointer;
-    }
-
-    .metric-btn.is-active {
-      background: var(--primary-container, #dcf1ff);
-      color: var(--accent-fixed, #3186ff);
-      border-color: var(--accent-fixed, #3186ff);
-      font-weight: 600;
-    }
-
-    .expense-hint { font-size: 12px; line-height: 17px; color: var(--on-surface-variant, rgba(0,0,0,0.55)); }
-    .expense-summary { font-size: 13px; color: var(--on-surface-variant, rgba(0,0,0,0.55)); }
-    .expense-summary strong { color: var(--on-surface, #000000); font-family: var(--ff-mono, monospace); }
-    .col-selected { font-weight: 700; }
-
-    .expense-list { display: flex; flex-direction: column; gap: 8px; }
-
-    .expense-row {
-      background: var(--surface-bright, #ffffff);
-      border: 1px solid var(--stroke-default, #e3e3e3);
-      border-radius: var(--r-s, 8px);
-      padding: 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .expense-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 8px;
-      align-items: end;
-    }
-
-    .expense-field {
-      width: 100%;
-      min-height: 36px;
-      padding: 6px 10px;
-      border-radius: var(--r-s, 8px);
-      border: 1px solid var(--stroke-default, #e3e3e3);
-      background: var(--surface-bright, #ffffff);
-      color: var(--on-surface, #000000);
-      font-family: var(--ff-sans, sans-serif);
-      font-size: 13px;
-      box-sizing: border-box;
-    }
-
-    .expense-add {
-      border: 1px dashed var(--stroke-default, #e3e3e3);
-      border-radius: var(--r-s, 8px);
-      padding: 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
     /* Card de item colapsável */
+    .vehicle-card .vehicle-card-titlebtn {
+      flex: 1; min-width: 0; display: block; justify-content: flex-start; text-align: left;
+      min-height: 32px; padding: 4px 8px; line-height: 24px;
+      background: transparent; border: none; border-radius: 8px; cursor: pointer;
+      color: var(--on-surface, #000000);
+      font-family: var(--ff-sans, sans-serif); font-size: 15px; font-weight: 600;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .vehicle-card .vehicle-card-titlebtn:hover { background: var(--surface-container-high, #e6e6e6); }
+    .vehicle-card:not(.is-open) .vehicle-card-head .action-btn-danger { display: none; }
     .vehicle-card-toggle {
       display: inline-flex;
       align-items: center;
@@ -1483,31 +1420,6 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
       border-top: 1px solid var(--stroke-default, #e3e3e3);
     }
     .vehicle-card.is-open .vehicle-card-body { display: flex; }
-
-    /* Grupos de despesas por tipo */
-    .expense-group { display: flex; flex-direction: column; gap: 6px; }
-
-    .expense-group-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      gap: 8px;
-      font-family: var(--ff-sans, sans-serif);
-      font-size: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.02em;
-      color: var(--on-surface-variant, rgba(0,0,0,0.55));
-    }
-    .expense-group-head .expense-group-subtotal {
-      font-family: var(--ff-mono, monospace);
-      font-weight: 700;
-      text-transform: none;
-      letter-spacing: 0;
-      color: var(--on-surface, #000000);
-    }
-
-    .expense-add-toggle-row { display: flex; }
 
     /* Modal próprio (alert/confirm nativos não funcionam de forma confiável
        em páginas publicadas pela Claude) */
@@ -1870,11 +1782,35 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
       #tab-ranking .ranking-table th:nth-child(1), #tab-ranking .ranking-table td:nth-child(1) { box-shadow: 10px 0 12px -10px rgba(0,0,0,.65); }
     }
 
-    /* ===== Barra de análises ===== */
-    .analysis-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding-top: 12px; }
-    .analysis-label { font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--on-surface-variant); }
-    .analysis-select { width: auto; min-width: 220px; max-width: 100%; font-weight: 600; }
+    /* ===== Cabeçalho compacto: título + controles na mesma linha ===== */
+    .widget-container { padding: 8px 12px 12px; padding-inline: 12px !important; gap: 8px; }
+    .widget-header { gap: 0; }
+    .header-top { align-items: center; flex-wrap: wrap; gap: 6px 14px; }
+    .header-title { flex: 1 1 340px; min-width: 0; }
+    .header-h { margin: 0; font-size: 18px; line-height: 24px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .header-sub { margin: 0; font-size: 12px; line-height: 16px; color: var(--on-surface-variant, rgba(0,0,0,0.55)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .header-actions { flex: 0 1 auto; justify-content: flex-end; gap: 6px; }
+    .header-actions .header-action-btn { min-height: 32px; padding: 0 10px; font-size: 13px; }
+    .header-actions .header-action-btn.icon { width: 32px; padding: 0; justify-content: center; font-size: 14px; }
+    .hdr-group { display: inline-flex; align-items: center; gap: 4px; }
+    .hdr-sep { width: 1px; height: 20px; background: var(--stroke-default, rgba(0,0,0,0.12)); }
+    .analysis-select { width: auto; min-width: 150px; max-width: 240px; min-height: 32px; padding-top: 3px; padding-bottom: 3px; font-weight: 600; }
+    @media (max-width: 600px) { .hdr-sep { display: none; } .header-actions { justify-content: flex-start; } }
     .header-action-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+    /* ===== Tela de análises: células condensadas ===== */
+    #tab-ranking .ranking-table { font-size: 13px; }
+    #tab-ranking .ranking-table th, #tab-ranking .ranking-table td { padding: 5px 6px; }
+    #tab-ranking .ranking-table th:nth-child(1), #tab-ranking .ranking-table td:nth-child(1) { left: 0; width: 58px; min-width: 58px; max-width: 58px; }
+    #tab-ranking .ranking-table th:nth-child(2), #tab-ranking .ranking-table td:nth-child(2) { left: 58px; width: 58px; min-width: 58px; max-width: 58px; }
+    #tab-ranking .ranking-table th:nth-child(3), #tab-ranking .ranking-table td:nth-child(3) { left: 116px; min-width: 130px; }
+    #tab-ranking .vehicle-thumb, #tab-ranking .vehicle-thumb-placeholder { width: 46px; height: 34px; border-radius: 6px; }
+    #tab-ranking .vehicle-thumb-placeholder { font-size: 15px; }
+    #tab-ranking .rank-badge { transform: scale(.92); transform-origin: left center; }
+    #tab-ranking .score-progress { width: 56px; margin-right: 4px; }
+    #tab-ranking .image-reveal-btn { width: 30px; height: 30px; font-size: 14px; }
+    #tab-ranking .ads-view-btn { padding: 4px 9px; font-size: 12px; }
+    #tableHeader .sort-arrow { margin-left: 3px; }
 
     /* ===== Ordenação do ranking ===== */
     #tableHeader th.sortable { cursor: pointer; user-select: none; white-space: nowrap; }
@@ -1969,32 +1905,28 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
     <!-- Header -->
     <div class="widget-header">
       <div class="header-top">
-        <div>
-          <h2 class="lumi-headline-m" style="margin: 0;">Sistema auxiliar de tomada de decisões</h2>
-          <p class="lumi-body-s" style="margin: 2px 0 0 0; color: var(--on-surface-variant, rgba(0,0,0,0.55));">
-            Compare opções com critérios e pesos personalizados, em quantas análises quiser
-          </p>
+        <div class="header-title">
+          <h2 class="lumi-headline-m header-h">Sistema auxiliar de tomada de decisões</h2>
+          <p class="lumi-body-s header-sub">Compare opções com critérios e pesos personalizados, em quantas análises quiser</p>
         </div>
         <div class="header-actions">
+          <select class="ad-select analysis-select" id="analysisSelect" aria-label="Selecionar análise"></select>
+          <div class="hdr-group" role="group" aria-label="Gerenciar análises">
+            <button type="button" class="header-action-btn icon" id="btnNewAnalysis" title="Nova análise" aria-label="Nova análise">＋</button>
+            <button type="button" class="header-action-btn icon" id="btnRenameAnalysis" title="Renomear análise" aria-label="Renomear análise">✏️</button>
+            <button type="button" class="header-action-btn icon" id="btnDuplicateAnalysis" title="Duplicar análise" aria-label="Duplicar análise">⧉</button>
+            <button type="button" class="header-action-btn icon" id="btnDeleteAnalysis" title="Excluir análise" aria-label="Excluir análise">🗑️</button>
+          </div>
+          <span class="hdr-sep" aria-hidden="true"></span>
           <span class="save-status" id="saveStatus" role="status" aria-live="polite"></span>
-          <button type="button" class="header-action-btn" id="btnAuth" title="Entrar para salvar seus dados no Supabase">🔐 Entrar</button>
-          <button type="button" class="header-action-btn" id="btnMigrateImages" title="Envia ao Supabase as fotos que estão guardadas dentro dos dados" disabled>☁️ Fotos para o Supabase</button>
-          <button type="button" class="header-action-btn" id="btnExportData" title="Baixar todas as análises em um arquivo JSON">
-            ⬇️ Exportar dados
-          </button>
-          <button type="button" class="header-action-btn" id="btnImportData" title="Carregar análises de um arquivo JSON (são adicionadas às atuais)">
-            ⬆️ Importar dados
-          </button>
+          <div class="hdr-group" role="group" aria-label="Dados e conta">
+            <button type="button" class="header-action-btn icon" id="btnImportData" title="Importar dados (carrega análises de um arquivo JSON e as adiciona às atuais)" aria-label="Importar dados">⬆️</button>
+            <button type="button" class="header-action-btn icon" id="btnExportData" title="Exportar dados (baixa todas as análises em um arquivo JSON)" aria-label="Exportar dados">⬇️</button>
+            <button type="button" class="header-action-btn icon" id="btnMigrateImages" title="Entre na sua conta para enviar as fotos ao Supabase" aria-label="Enviar fotos ao Supabase" disabled>☁️</button>
+            <button type="button" class="header-action-btn" id="btnAuth" title="Entrar para salvar seus dados no Supabase">🔐 Entrar</button>
+          </div>
           <input type="file" id="fileImportData" accept="application/json,.json" style="display:none;">
         </div>
-      </div>
-      <div class="analysis-bar">
-        <label class="analysis-label" for="analysisSelect">Análise</label>
-        <select class="ad-select analysis-select" id="analysisSelect" aria-label="Selecionar análise"></select>
-        <button type="button" class="header-action-btn" id="btnNewAnalysis">＋ Nova</button>
-        <button type="button" class="header-action-btn" id="btnRenameAnalysis">✏️ Renomear</button>
-        <button type="button" class="header-action-btn" id="btnDuplicateAnalysis">⧉ Duplicar</button>
-        <button type="button" class="header-action-btn" id="btnDeleteAnalysis">🗑️ Excluir</button>
       </div>
     </div>
 
@@ -2003,15 +1935,14 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
     <!-- Navigation Tabs -->
     <nav class="view-tabs" aria-label="Seções">
       <button type="button" class="nav-toggle" id="navToggle" aria-expanded="true" aria-label="Recolher menu" data-label="Expandir menu"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 17l-5-5 5-5M18 17l-5-5 5-5"/></svg><span>Recolher menu</span></button>
-      <button class="tab-btn is-active" data-tab="ranking" data-label="Ranking & Comparativo" aria-label="Ranking & Comparativo"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Ranking & Comparativo</span></button>
+      <button class="tab-btn is-active" data-tab="ranking" data-label="Análises" aria-label="Análises"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Análises</span></button>
       <button class="tab-btn" data-tab="criteria" data-label="Configurar Critérios & Pesos" aria-label="Configurar Critérios & Pesos"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h9M17 6h4M3 12h4M12 12h9M3 18h11M19 18h2"/><circle cx="14.5" cy="6" r="2.2"/><circle cx="9.5" cy="12" r="2.2"/><circle cx="16.5" cy="18" r="2.2"/></svg><span>Configurar Critérios & Pesos</span></button>
       <button class="tab-btn" data-tab="vehicles" data-label="Gerenciar & Inserir Itens" aria-label="Gerenciar & Inserir Itens"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 17h16M5.5 17l1.7-6h9.6l1.7 6M7 20v-3M17 20v-3"/></svg><span>Gerenciar & Inserir Itens</span></button>
-      <button class="tab-btn" data-tab="expenses" data-label="Despesas" aria-label="Despesas"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5h4a1.5 1.5 0 010 3h-3a1.5 1.5 0 000 3H15"/></svg><span>Despesas</span></button>
       <button class="tab-btn" data-tab="ads" data-label="Links" aria-label="Links"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12V3h9l9 9-9 9z"/><circle cx="7.5" cy="7.5" r="1.2"/></svg><span>Links</span></button>
       <button class="tab-btn" data-tab="notes" data-label="Anotações" aria-label="Anotações"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7"/></svg><span>Anotações</span></button>
     </nav>
 
-    <!-- Tab 1: Ranking & Comparativo -->
+    <!-- Tab 1: Análises -->
     <div class="tab-content is-active" id="tab-ranking">
       <div class="table-container">
         <table class="ranking-table">
@@ -2059,70 +1990,7 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
           <!-- Dynamic criteria inputs inserted here -->
         </div>
         <div class="btn-row">
-          <button class="action-btn" id="btnSaveVehicle">Adicionar ao Ranking</button>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Tab 4: Despesas (dados independentes das demais abas) -->
-    <div class="tab-content" id="tab-expenses">
-      <div class="control-deck">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-          <span class="lumi-body-m lumi-body-m-emphasized">Comparativo de Despesas (menor custo primeiro)</span>
-          <div class="metric-toggle" id="expenseMetricToggle">
-            <button type="button" class="metric-btn is-active" data-metric="por1000">Por 1000 km</button>
-            <button type="button" class="metric-btn" data-metric="anual">Anual</button>
-            <button type="button" class="metric-btn" data-metric="quinquenal">Quinquenal</button>
-          </div>
-        </div>
-        <div class="chart-wrapper">
-          <canvas id="expenseChart"></canvas>
-        </div>
-        <div class="table-container">
-          <table class="ranking-table">
-            <thead>
-              <tr>
-                <th>Pos.</th>
-                <th>Item</th>
-                <th>Por 1000 km</th>
-                <th>Anual</th>
-                <th>Quinquenal (5 anos)</th>
-                <th>Despesas</th>
-              </tr>
-            </thead>
-            <tbody id="expenseTableBody">
-              <!-- Populated dynamically -->
-            </tbody>
-          </table>
-        </div>
-        <div class="expense-hint">
-          Premissas: despesa por quilometragem é informada em R$ por 1000 km e projetada para 5.000 km/ano (entra como despesa anual).
-          Quinquenal = despesas anuais somadas por 5 anos + despesas quinquenais lançadas.
-          "Por 1000 km" = total de 5 anos ÷ 25 (25.000 km).
-        </div>
-      </div>
-
-      <div class="control-deck">
-        <span class="lumi-body-m lumi-body-m-emphasized" id="expenseVehicleListTitle">Itens e Despesas</span>
-        <div class="vehicle-list" id="expenseVehicleList">
-          <!-- Populated dynamically -->
-        </div>
-      </div>
-      <div class="control-deck">
-        <span class="lumi-body-m lumi-body-m-emphasized">Cadastrar Item</span>
-        <div class="form-grid">
-          <div class="form-group">
-            <label class="lumi-body-s">Nome do Item / Modelo</label>
-            <input type="text" class="lumi-input" id="expVehName" placeholder="Ex: Sedan 1.0 Flex">
-          </div>
-          <div class="form-group field-full">
-            <label class="lumi-body-s">Observações</label>
-            <textarea class="note-input" id="expVehNote" placeholder="Anotações sobre este item (opcional)"></textarea>
-          </div>
-        </div>
-        <div class="btn-row">
-          <button class="action-btn" id="btnAddExpenseVehicle">Cadastrar Item</button>
+          <button class="action-btn" id="btnSaveVehicle">Adicionar à Análise</button>
         </div>
       </div>
 
@@ -2200,42 +2068,11 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
       ]
     };
 
-    // Aba de despesas: dados independentes da matriz de decisão
-    state.expenseVehicles = [];   // [{ id, name, note, expenses: [{ id, desc, value, type, note }] }]
-    state.expenseMetric = 'por1000';
     state.ads = [];   // [{ id, description, year, price, fipePrice, image: {id,url}|null, link, comment }]
     state.notes = [];   // [{ id, title, content (HTML), updatedAt }]
 
-    let expenseChartInstance = null;
-
-    // Estado apenas de interface (expandir/colapsar); não é salvo/exportado
-    const expenseCardOpen = new Set();
-    const expenseAddFormOpen = new Set();
-
-    const EXPENSE_GROUP_ORDER = ['km', 'anual', 'quinquenal'];
-    const EXPENSE_GROUP_LABELS = { km: 'Por quilometragem', anual: 'Anual', quinquenal: 'Quinquenal' };
-
-    function groupExpensesByType(expenses) {
-      const groups = { km: [], anual: [], quinquenal: [] };
-      expenses.forEach(e => (groups[e.type] || groups.km).push(e));
-      return groups;
-    }
-
-    function expenseGroupSubtotal(list, type) {
-      const sum = list.reduce((acc, e) => acc + (Number(e.value) || 0), 0);
-      const unit = type === 'km' ? ' / 1000 km' : type === 'anual' ? ' / ano' : ` / ${ANOS_QUINQUENAL} anos`;
-      return fmtBRL.format(sum) + unit;
-    }
-
-    window.toggleExpenseCard = function(vid) {
-      if (expenseCardOpen.has(vid)) expenseCardOpen.delete(vid); else expenseCardOpen.add(vid);
-      renderExpenseManage();
-    };
-
-    window.toggleExpenseAddForm = function(vid) {
-      if (expenseAddFormOpen.has(vid)) expenseAddFormOpen.delete(vid); else expenseAddFormOpen.add(vid);
-      renderExpenseManage();
-    };
+    // Estado apenas de interface (itens expandidos); não é salvo/exportado
+    const vehicleCardOpen = new Set();
 
     // Calculate score (2 to 10) for a specific criteria value
     function calculateCriterionScore(value, criterion) {
@@ -2822,14 +2659,14 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
       });
 
       html += imageFieldHTML({
-        label: 'Foto principal (aparece no ranking)',
+        label: 'Foto principal (aparece na análise)',
         image: newVehiclePendingImage.main,
         onChange: `handleNewVehicleImageSelect('main', this)`,
         onClear: `clearNewVehicleImage('main')`,
         statusId: 'newCarImgMainStatus'
       });
       html += imageFieldHTML({
-        label: 'Foto extra (exibida ao clicar no ranking)',
+        label: 'Foto extra (exibida ao clicar na análise)',
         image: newVehiclePendingImage.detail,
         onChange: `handleNewVehicleImageSelect('detail', this)`,
         onClear: `clearNewVehicleImage('detail')`,
@@ -2868,10 +2705,16 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
       state.vehicles.forEach(v => {
         const { valueMap, errors } = computeVehicleValues(v, order, cyclic);
         html += `
-          <div class="vehicle-card">
+          <div class="vehicle-card${vehicleCardOpen.has(v.id) ? ' is-open' : ''}" data-vid="${esc(v.id)}">
             <div class="vehicle-card-head">
-              <input type="text" class="vehicle-name-input" value="${esc(v.name)}" aria-label="Nome do item" onchange="updateVehicleName('${v.id}', this.value)">
+              <button type="button" class="vehicle-card-toggle" aria-label="Expandir ou recolher o item" aria-expanded="${vehicleCardOpen.has(v.id)}" onclick="toggleVehicleCard('${v.id}')">▸</button>
+              <button type="button" class="vehicle-card-titlebtn" aria-expanded="${vehicleCardOpen.has(v.id)}" title="Clique para expandir ou recolher" onclick="toggleVehicleCard('${v.id}')">${esc(v.name)}</button>
               <button class="action-btn-danger" onclick="deleteVehicle('${v.id}')">Excluir</button>
+            </div>
+            <div class="vehicle-card-body">
+            <div class="form-group">
+              <label class="lumi-body-s">Nome do item</label>
+              <input type="text" class="vehicle-name-input" value="${esc(v.name)}" aria-label="Nome do item" onchange="updateVehicleName('${v.id}', this.value)">
             </div>
             <div class="form-grid">`;
         state.criteria.forEach(c => {
@@ -2898,14 +2741,14 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
         html += `
             </div>
             ${imageFieldHTML({
-              label: 'Foto principal (aparece no ranking)',
+              label: 'Foto principal (aparece na análise)',
               image: v.images && v.images.main,
               onChange: `updateVehicleImage('${v.id}', 'main', this)`,
               onClear: `clearVehicleImage('${v.id}', 'main')`,
               statusId: `vehImg_main_${v.id}_status`
             })}
             ${imageFieldHTML({
-              label: 'Foto extra (exibida ao clicar no ranking)',
+              label: 'Foto extra (exibida ao clicar na análise)',
               image: v.images && v.images.detail,
               onChange: `updateVehicleImage('${v.id}', 'detail', this)`,
               onClear: `clearVehicleImage('${v.id}', 'detail')`,
@@ -2914,6 +2757,7 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
             <div class="form-group">
               <label class="lumi-body-s">Observações</label>
               <textarea class="note-input" placeholder="Anotações sobre este item (opcional)" oninput="updateVehicleNote('${v.id}', this.value)">${esc(v.note)}</textarea>
+            </div>
             </div>
           </div>`;
       });
@@ -2944,7 +2788,24 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
         return;
       }
       v.name = name;
+      document.querySelectorAll('#vehicleManageList .vehicle-card').forEach(card => {
+        if (card.dataset.vid === vid) {
+          const t = card.querySelector('.vehicle-card-titlebtn');
+          if (t) t.textContent = name;
+        }
+      });
       refreshRanking();
+    };
+
+    // Expande/recolhe o card de um item (sem recriar a lista)
+    window.toggleVehicleCard = function(vid) {
+      const open = !vehicleCardOpen.has(vid);
+      if (open) vehicleCardOpen.add(vid); else vehicleCardOpen.delete(vid);
+      document.querySelectorAll('#vehicleManageList .vehicle-card').forEach(card => {
+        if (card.dataset.vid !== vid) return;
+        card.classList.toggle('is-open', open);
+        card.querySelectorAll('.vehicle-card-toggle, .vehicle-card-titlebtn').forEach(b => b.setAttribute('aria-expanded', String(open)));
+      });
     };
 
     // Observações: só guardam no estado; o ranking é atualizado ao abrir a aba
@@ -3013,277 +2874,6 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
         updateViz();
       }, 'Excluir');
     };
-
-    // ================= Despesas =================
-    const KM_ANUAL = 5000;          // km/ano usados para projetar despesas por quilometragem
-    const ANOS_QUINQUENAL = 5;
-    const EXPENSE_TYPES = {
-      km: 'Por quilometragem (R$ / 1000 km)',
-      anual: 'Anual (R$ / ano)',
-      quinquenal: 'Quinquenal (R$ / 5 anos)'
-    };
-    const EXPENSE_METRICS = {
-      por1000: { label: 'Por 1000 km', key: 'por1000' },
-      anual: { label: 'Anual', key: 'anualTotal' },
-      quinquenal: { label: 'Quinquenal', key: 'quinTotal' }
-    };
-    const fmtBRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
-    let expenseSeq = 0;
-    const newExpenseId = (prefix) => `${prefix}_${Date.now()}_${++expenseSeq}`;
-
-    function calcExpenseTotals(v) {
-      let km = 0, anual = 0, quin = 0;
-      const list = v.expenses || [];
-      list.forEach(e => {
-        const val = Number(e.value) || 0;
-        if (e.type === 'km') km += val;
-        else if (e.type === 'anual') anual += val;
-        else quin += val;
-      });
-      const anualKm = km * (KM_ANUAL / 1000);
-      const anualTotal = anualKm + anual;
-      const quinTotal = anualTotal * ANOS_QUINQUENAL + quin;
-      const por1000 = quinTotal / ((KM_ANUAL * ANOS_QUINQUENAL) / 1000);
-      return { km, anual, quin, anualKm, anualTotal, quinTotal, por1000, count: list.length };
-    }
-
-    function expenseProjection(e) {
-      const val = Number(e.value) || 0;
-      if (e.type === 'km') return `Projetado para ${KM_ANUAL.toLocaleString('pt-BR')} km: ${fmtBRL.format(val * KM_ANUAL / 1000)} por ano`;
-      if (e.type === 'anual') return `Em ${ANOS_QUINQUENAL} anos: ${fmtBRL.format(val * ANOS_QUINQUENAL)}`;
-      return `Lançada uma vez a cada ${ANOS_QUINQUENAL} anos`;
-    }
-
-    function expenseSummaryHTML(v) {
-      const t = calcExpenseTotals(v);
-      return `Por 1000 km: <strong>${fmtBRL.format(t.por1000)}</strong> · Anual: <strong>${fmtBRL.format(t.anualTotal)}</strong> · Quinquenal: <strong>${fmtBRL.format(t.quinTotal)}</strong>`;
-    }
-
-    function getExpenseRanking() {
-      const key = EXPENSE_METRICS[state.expenseMetric].key;
-      return state.expenseVehicles
-        .map(v => ({ v, t: calcExpenseTotals(v) }))
-        .sort((a, b) => a.t[key] - b.t[key]);
-    }
-
-    function renderExpenseCompare() {
-      const body = document.getElementById('expenseTableBody');
-      if (!body) return;
-      const metric = state.expenseMetric;
-      const rows = getExpenseRanking();
-
-      document.querySelectorAll('#expenseMetricToggle .metric-btn').forEach(b => {
-        b.classList.toggle('is-active', b.dataset.metric === metric);
-      });
-
-      if (rows.length === 0) {
-        body.innerHTML = '<tr><td colspan="6" class="vehicle-empty">Nenhum item cadastrado.</td></tr>';
-      } else {
-        const cls = (m) => (m === metric ? ' class="col-selected"' : '');
-        body.innerHTML = rows.map(({ v, t }, idx) => {
-          const n = idx + 1;
-          const badge = n === 1 ? 'rank-1' : n === 2 ? 'rank-2' : n === 3 ? 'rank-3' : 'rank-other';
-          return `<tr class="${n === 1 ? 'is-top' : ''}">
-            <td><span class="rank-badge ${badge}">#${n}</span></td>
-            <td style="font-weight: 600;">${esc(v.name)}${noteIcon(v.note)}</td>
-            <td${cls('por1000')}>${fmtBRL.format(t.por1000)}</td>
-            <td${cls('anual')}>${fmtBRL.format(t.anualTotal)}</td>
-            <td${cls('quinquenal')}>${fmtBRL.format(t.quinTotal)}</td>
-            <td>${t.count}</td>
-          </tr>`;
-        }).join('');
-      }
-      renderExpenseChart(rows);
-    }
-
-    function renderExpenseChart(rows) {
-      const ctx = document.getElementById('expenseChart')?.getContext('2d');
-      if (!ctx) return;
-      if (expenseChartInstance) { expenseChartInstance.destroy(); expenseChartInstance = null; }
-      if (typeof Chart === 'undefined' || rows.length === 0) return;
-
-      const m = EXPENSE_METRICS[state.expenseMetric];
-      const seriesColors = [
-        getCssVar('--chart-1') || '#2575fc', getCssVar('--chart-2') || '#5b6e9e',
-        getCssVar('--chart-3') || '#228a49', getCssVar('--chart-4') || '#62991b',
-        getCssVar('--chart-5') || '#1e564d', getCssVar('--chart-7') || '#2780c4'
-      ];
-
-      expenseChartInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: rows.map(r => r.v.name),
-          datasets: [{
-            label: m.label,
-            data: rows.map(r => Math.round(r.t[m.key] * 100) / 100),
-            backgroundColor: rows.map((_, i) => seriesColors[i % seriesColors.length]),
-            borderRadius: { topLeft: 99, topRight: 99, bottomLeft: 0, bottomRight: 0 },
-            maxBarThickness: 36
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: { callbacks: { label: c => ` ${m.label}: ${fmtBRL.format(c.parsed.y)}` } }
-          },
-          scales: {
-            x: {
-              grid: { display: false },
-              ticks: { font: { family: getCssVar('--ff-sans') || 'sans-serif', size: 12 }, color: getCssVar('--on-surface-variant') || 'rgba(0,0,0,0.55)' }
-            },
-            y: {
-              beginAtZero: true,
-              grid: { color: getCssVar('--stroke-default') || 'rgba(0,0,0,0.08)' },
-              ticks: {
-                font: { family: getCssVar('--ff-mono') || 'monospace', size: 12 },
-                color: getCssVar('--on-surface-variant') || 'rgba(0,0,0,0.55)',
-                callback: v => 'R$ ' + Number(v).toLocaleString('pt-BR')
-              }
-            }
-          }
-        }
-      });
-    }
-
-    // Atualiza comparativo, resumos e projeções sem recriar as listas de edição
-    function refreshExpenseViews() {
-      renderExpenseCompare();
-      document.querySelectorAll('[data-exp-summary]').forEach(el => {
-        const v = state.expenseVehicles.find(x => x.id === el.dataset.expSummary);
-        if (v) el.innerHTML = expenseSummaryHTML(v);
-      });
-      document.querySelectorAll('[data-exp-proj]').forEach(el => {
-        const v = state.expenseVehicles.find(x => x.id === el.dataset.vid);
-        const e = v && v.expenses.find(x => x.id === el.dataset.eid);
-        if (e) el.textContent = expenseProjection(e);
-      });
-    }
-
-    function renderExpenseManage() {
-      const list = document.getElementById('expenseVehicleList');
-      const title = document.getElementById('expenseVehicleListTitle');
-      if (!list) return;
-      if (title) title.textContent = `Itens e Despesas (${state.expenseVehicles.length})`;
-
-      // preserva o que já foi digitado nos formulários de "nova despesa"
-      const prev = {};
-      list.querySelectorAll('[id]').forEach(el => { prev[el.id] = el.value; });
-
-      if (state.expenseVehicles.length === 0) {
-        list.innerHTML = '<div class="vehicle-empty">Nenhum item cadastrado. Cadastre um item acima para lançar despesas.</div>';
-        return;
-      }
-
-      const typeOptions = (sel) => Object.keys(EXPENSE_TYPES)
-        .map(k => `<option value="${k}"${k === sel ? ' selected' : ''}>${EXPENSE_TYPES[k]}</option>`).join('');
-
-      const expenseRowHTML = (v, e) => `
-        <div class="expense-row">
-          <div class="expense-grid">
-            <div class="form-group">
-              <label class="lumi-body-s">Descrição</label>
-              <input type="text" class="expense-field" value="${esc(e.desc)}" onchange="updateExpense('${v.id}', '${e.id}', 'desc', this.value)">
-            </div>
-            <div class="form-group">
-              <label class="lumi-body-s">Valor (R$)</label>
-              <input type="number" class="expense-field" min="0" step="0.01" value="${e.value}" onchange="updateExpense('${v.id}', '${e.id}', 'value', this.value)">
-            </div>
-            <div class="form-group">
-              <label class="lumi-body-s">Tipo</label>
-              <select class="expense-field" onchange="updateExpense('${v.id}', '${e.id}', 'type', this.value)">${typeOptions(e.type)}</select>
-            </div>
-            <div><button class="action-btn-danger" onclick="deleteExpense('${v.id}', '${e.id}')">Remover</button></div>
-          </div>
-          <div class="expense-hint" data-exp-proj="1" data-vid="${v.id}" data-eid="${e.id}">${esc(expenseProjection(e))}</div>
-          <div class="form-group">
-            <label class="lumi-body-s">Observações</label>
-            <textarea class="note-input" placeholder="Anotações sobre esta despesa (opcional)" oninput="updateExpense('${v.id}', '${e.id}', 'note', this.value)">${esc(e.note)}</textarea>
-          </div>
-        </div>`;
-
-      const expenseGroupsHTML = (v) => {
-        const groups = groupExpensesByType(v.expenses);
-        const html = EXPENSE_GROUP_ORDER
-          .filter(type => groups[type].length > 0)
-          .map(type => `
-            <div class="expense-group">
-              <div class="expense-group-head">
-                <span>${EXPENSE_GROUP_LABELS[type]} (${groups[type].length})</span>
-                <span class="expense-group-subtotal">${expenseGroupSubtotal(groups[type], type)}</span>
-              </div>
-              <div class="expense-list">${groups[type].map(e => expenseRowHTML(v, e)).join('')}</div>
-            </div>`).join('');
-        return html || '<div class="vehicle-empty">Nenhuma despesa lançada.</div>';
-      };
-
-      list.innerHTML = state.expenseVehicles.map(v => {
-        const isOpen = expenseCardOpen.has(v.id);
-        const addOpen = expenseAddFormOpen.has(v.id);
-
-        const addFormHTML = addOpen ? `
-              <div class="expense-add">
-                <span class="lumi-body-s" style="font-weight: 600;">Nova despesa</span>
-                <div class="expense-grid">
-                  <div class="form-group">
-                    <label class="lumi-body-s">Descrição</label>
-                    <input type="text" class="expense-field" id="nx_${v.id}_desc" placeholder="Ex: Combustível, IPVA, Bateria">
-                  </div>
-                  <div class="form-group">
-                    <label class="lumi-body-s">Valor (R$)</label>
-                    <input type="number" class="expense-field" id="nx_${v.id}_val" min="0" step="0.01" placeholder="0,00">
-                  </div>
-                  <div class="form-group">
-                    <label class="lumi-body-s">Tipo</label>
-                    <select class="expense-field" id="nx_${v.id}_type">${typeOptions('km')}</select>
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label class="lumi-body-s">Observações</label>
-                  <textarea class="note-input" id="nx_${v.id}_note" placeholder="Anotações sobre esta despesa (opcional)"></textarea>
-                </div>
-                <div class="btn-row" style="margin-top: 0;">
-                  <button class="action-btn" onclick="addExpense('${v.id}')">Salvar despesa</button>
-                  <button class="action-btn-secondary" onclick="toggleExpenseAddForm('${v.id}')">Cancelar</button>
-                </div>
-              </div>` : `
-              <div class="expense-add-toggle-row">
-                <button class="action-btn-secondary" onclick="toggleExpenseAddForm('${v.id}')">+ Nova despesa</button>
-              </div>`;
-
-        return `
-          <div class="vehicle-card${isOpen ? ' is-open' : ''}">
-            <div class="vehicle-card-head">
-              <button type="button" class="vehicle-card-toggle" onclick="toggleExpenseCard('${v.id}')" aria-label="Expandir/recolher item" title="Expandir/recolher">▸</button>
-              <div class="vehicle-card-title">
-                <input type="text" class="vehicle-name-input" value="${esc(v.name)}" aria-label="Nome do item" onchange="updateExpVehicleName('${v.id}', this.value)">
-                <div class="expense-summary" data-exp-summary="${v.id}">${expenseSummaryHTML(v)}</div>
-              </div>
-              <button class="action-btn-danger" onclick="deleteExpVehicle('${v.id}')">Excluir</button>
-            </div>
-            <div class="vehicle-card-body">
-              <div class="form-group">
-                <label class="lumi-body-s">Observações do item</label>
-                <textarea class="note-input" placeholder="Anotações sobre este item (opcional)" oninput="updateExpVehicleNote('${v.id}', this.value)" onchange="refreshExpenseViews()">${esc(v.note)}</textarea>
-              </div>
-              ${expenseGroupsHTML(v)}
-              ${addFormHTML}
-            </div>
-          </div>`;
-      }).join('');
-
-      Object.keys(prev).forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.value = prev[id];
-      });
-    }
-
-    function renderExpenseAll() {
-      renderExpenseCompare();
-      renderExpenseManage();
-      schedulePersist();
-    }
 
     // ================= Links =================
     let newAdPendingImage = null;
@@ -3722,110 +3312,6 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
       });
     };
 
-    window.addExpenseVehicle = function() {
-      const nameEl = document.getElementById('expVehName');
-      const noteEl = document.getElementById('expVehNote');
-      const name = nameEl ? nameEl.value.trim() : '';
-      if (!name) { showAlert('Por favor, informe o nome do item.'); return; }
-      const newId = newExpenseId('ev');
-      state.expenseVehicles.push({
-        id: newId,
-        name,
-        note: noteEl ? noteEl.value.trim() : '',
-        expenses: []
-      });
-      expenseCardOpen.add(newId);
-      expenseAddFormOpen.add(newId);
-      if (nameEl) nameEl.value = '';
-      if (noteEl) noteEl.value = '';
-      renderExpenseAll();
-    };
-
-    window.updateExpVehicleName = function(vid, val) {
-      const v = state.expenseVehicles.find(x => x.id === vid);
-      if (!v) return;
-      const name = String(val).trim();
-      if (!name) { showAlert('O nome do item não pode ficar vazio.'); renderExpenseManage(); return; }
-      v.name = name;
-      refreshExpenseViews();
-    };
-
-    // Observação: guarda no estado ao digitar; comparativo atualiza ao sair do campo
-    window.updateExpVehicleNote = function(vid, val) {
-      const v = state.expenseVehicles.find(x => x.id === vid);
-      if (v) { v.note = val; schedulePersist(); }
-    };
-
-    window.deleteExpVehicle = function(vid) {
-      const v = state.expenseVehicles.find(x => x.id === vid);
-      if (!v) return;
-      showConfirm(`Excluir o item "${v.name}" e todas as suas despesas?`, () => {
-        state.expenseVehicles = state.expenseVehicles.filter(x => x.id !== vid);
-        expenseCardOpen.delete(vid);
-        expenseAddFormOpen.delete(vid);
-        renderExpenseAll();
-      });
-    };
-
-    window.addExpense = function(vid) {
-      const v = state.expenseVehicles.find(x => x.id === vid);
-      if (!v) return;
-      const desc = (document.getElementById(`nx_${vid}_desc`)?.value || '').trim();
-      const rawVal = document.getElementById(`nx_${vid}_val`)?.value;
-      const type = document.getElementById(`nx_${vid}_type`)?.value || 'km';
-      const note = (document.getElementById(`nx_${vid}_note`)?.value || '').trim();
-      if (!desc) { showAlert('Informe a descrição da despesa.'); return; }
-      if (rawVal === '' || rawVal == null || isNaN(parseFloat(rawVal))) { showAlert('Informe o valor da despesa.'); return; }
-      v.expenses.push({
-        id: newExpenseId('ex'),
-        desc,
-        value: Math.max(0, parseFloat(rawVal)),
-        type: EXPENSE_TYPES[type] ? type : 'km',
-        note
-      });
-      ['desc', 'val', 'note'].forEach(k => { const el = document.getElementById(`nx_${vid}_${k}`); if (el) el.value = ''; });
-      renderExpenseAll();
-    };
-
-    window.updateExpense = function(vid, eid, field, val) {
-      const v = state.expenseVehicles.find(x => x.id === vid);
-      const e = v && v.expenses.find(x => x.id === eid);
-      if (!e) return;
-      if (field === 'value') e.value = Math.max(0, parseFloat(val) || 0);
-      else if (field === 'type') e.type = EXPENSE_TYPES[val] ? val : 'km';
-      else if (field === 'desc') e.desc = String(val).trim();
-      else if (field === 'note') { e.note = val; schedulePersist(); return; }
-      refreshExpenseViews();
-    };
-
-    window.deleteExpense = function(vid, eid) {
-      const v = state.expenseVehicles.find(x => x.id === vid);
-      if (!v) return;
-      v.expenses = v.expenses.filter(x => x.id !== eid);
-      renderExpenseAll();
-    };
-
-    // Valida e normaliza despesas importadas (retorna lista pronta ou lança erro)
-    function normalizeImportedExpenses(list) {
-      return list.map(v => {
-        if (!v || typeof v.id !== 'string' || typeof v.name !== 'string') {
-          throw new Error('Um ou mais itens de despesas estão incompletos.');
-        }
-        const exps = Array.isArray(v.expenses) ? v.expenses : [];
-        return {
-          id: v.id,
-          name: v.name,
-          note: typeof v.note === 'string' ? v.note : '',
-          expenses: exps.map(e => {
-            if (!e || typeof e.id !== 'string' || typeof e.desc !== 'string' || typeof e.value !== 'number' || !EXPENSE_TYPES[e.type]) {
-              throw new Error('Uma ou mais despesas estão incompletas ou com tipo inválido.');
-            }
-            return { id: e.id, desc: e.desc, value: Math.max(0, e.value), type: e.type, note: typeof e.note === 'string' ? e.note : '' };
-          })
-        };
-      });
-    }
-
     // ================= Modal próprio (substitui alert/confirm) =================
     function closeLumiModal() {
       const el = document.getElementById('lumiModalOverlay');
@@ -4089,19 +3575,17 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
     function blankData() {
       return {
         criteria: [{ id: 'crit_' + Date.now(), name: 'Critério 1', weight: 5, min: 1, max: 10, higherIsBetter: true, note: '' }],
-        vehicles: [], expenseVehicles: [], expenseMetric: 'por1000', ads: [], notes: []
+        vehicles: [], ads: [], notes: []
       };
     }
     // Guarda referências (sem clonar) do estado atual dentro da análise ativa
     function syncActive() {
       const a = activeAnalysis();
       if (!a) return;
-      a.data = { criteria: state.criteria, vehicles: state.vehicles, expenseVehicles: state.expenseVehicles,
-                 expenseMetric: state.expenseMetric, ads: state.ads, notes: state.notes };
+      a.data = { criteria: state.criteria, vehicles: state.vehicles, ads: state.ads, notes: state.notes };
     }
     function applyData(d) {
-      state.criteria = d.criteria; state.vehicles = d.vehicles; state.expenseVehicles = d.expenseVehicles;
-      state.expenseMetric = d.expenseMetric; state.ads = d.ads; state.notes = d.notes;
+      state.criteria = d.criteria; state.vehicles = d.vehicles; state.ads = d.ads; state.notes = d.notes;
     }
     function normalizeAnalysis(a) {
       if (!a || typeof a.name !== 'string' || !a.data || typeof a.data !== 'object') {
@@ -4114,8 +3598,7 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
         name: a.name.trim() || 'Sem nome',
         data: {
           criteria: arr(d.criteria).length ? d.criteria : blankData().criteria,
-          vehicles: arr(d.vehicles), expenseVehicles: arr(d.expenseVehicles),
-          expenseMetric: (typeof d.expenseMetric === 'string' && EXPENSE_METRICS[d.expenseMetric]) ? d.expenseMetric : 'por1000',
+          vehicles: arr(d.vehicles),
           ads: arr(d.ads), notes: arr(d.notes)
         }
       };
@@ -4136,7 +3619,6 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
     function renderAll() {
       renderAnalysisBar();
       updateViz();
-      renderExpenseManage();
       renderAdForm();
       renderAdsList();
       renderNotesList();
@@ -4148,8 +3630,7 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
       store.activeId = id;
       applyData(a.data);
       adsFilter = '';
-      expenseCardOpen.clear();
-      expenseAddFormOpen.clear();
+      vehicleCardOpen.clear();
       rankSort.key = 'pos'; rankSort.dir = 'asc';
       renderAll();
     }
@@ -4196,14 +3677,14 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
           switchAnalysis(x.id);
         } else if (btn.id === 'btnDeleteAnalysis') {
           if (store.analyses.length <= 1) { showAlert('É preciso manter pelo menos uma análise.'); return; }
-          showConfirm('Excluir a análise "' + cur.name + '"? Todos os itens, critérios, links, despesas e anotações dela serão apagados.', () => {
+          showConfirm('Excluir a análise "' + cur.name + '"? Todos os itens, critérios, links e anotações dela serão apagados.', () => {
             const idx = store.analyses.findIndex(x => x.id === cur.id);
             store.analyses.splice(idx, 1);
             const next = store.analyses[Math.min(idx, store.analyses.length - 1)];
             store.activeId = next.id;
             applyData(next.data);
             adsFilter = '';
-            expenseCardOpen.clear(); expenseAddFormOpen.clear();
+            vehicleCardOpen.clear();
             rankSort.key = 'pos'; rankSort.dir = 'asc';
             renderAll();
           }, 'Excluir');
@@ -4528,7 +4009,6 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
       renderCriteriaConfig();
       renderVehicleForm();
       renderVehicleManageList();
-      renderExpenseCompare();
       schedulePersist();
     }
 
@@ -4547,24 +4027,11 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
           if (tabTarget === 'ranking') {
             renderTable(getRankedVehicles());
           }
-          if (tabTarget === 'expenses') {
-            renderExpenseCompare();
-            setTimeout(renderExpenseCompare, 50);
-          }
         });
       });
 
-      // Aba de despesas
-      document.getElementById('btnAddExpenseVehicle')?.addEventListener('click', () => window.addExpenseVehicle());
       document.getElementById('btnAddAd')?.addEventListener('click', () => window.addAd());
       document.getElementById('btnAddNote')?.addEventListener('click', () => window.addNote());
-      document.querySelectorAll('#expenseMetricToggle .metric-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          state.expenseMetric = btn.dataset.metric;
-          renderExpenseCompare();
-          schedulePersist();
-        });
-      });
 
       // Add New Vehicle Button
       document.getElementById('btnSaveVehicle')?.addEventListener('click', () => {
@@ -4689,14 +4156,13 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
             }
 
             const hasMatrix = !!data && Array.isArray(data.criteria) && Array.isArray(data.vehicles);
-            const hasExpenses = !!data && Array.isArray(data.despesas);
             const hasAds = !!data && Array.isArray(data.anuncios);
             const hasNotes = !!data && Array.isArray(data.anotacoes);
-            if (!hasMatrix && !hasExpenses && !hasAds && !hasNotes) {
-              throw new Error('Estrutura inválida: esperado "criteria" e "vehicles", "despesas", "anuncios" e/ou "anotacoes".');
+            if (!hasMatrix && !hasAds && !hasNotes) {
+              throw new Error('Estrutura inválida: esperado "criteria" e "vehicles", "anuncios" e/ou "anotacoes".');
             }
 
-            let newCriteria, newVehicles, newExpenseVehicles, newAds, newNotes;
+            let newCriteria, newVehicles, newAds, newNotes;
 
             if (hasMatrix) {
               const criteriaValid = data.criteria.every(c =>
@@ -4714,10 +4180,6 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
               }
               newCriteria = data.criteria.map(c => ({ ...c, note: typeof c.note === 'string' ? c.note : '' }));
               newVehicles = data.vehicles.map(v => ({ ...v, note: typeof v.note === 'string' ? v.note : '' }));
-            }
-
-            if (hasExpenses) {
-              newExpenseVehicles = normalizeImportedExpenses(data.despesas);
             }
 
             if (hasAds) {
@@ -4738,11 +4200,9 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
 
             // Só aplica depois de validar tudo
             if (hasMatrix) { state.criteria = newCriteria; state.vehicles = newVehicles; }
-            if (hasExpenses) { state.expenseVehicles = newExpenseVehicles; }
             if (hasAds) { state.ads = newAds; }
             if (hasNotes) { state.notes = newNotes; }
             updateViz();
-            renderExpenseManage();
             renderAdForm();
             renderAdsList();
             renderNotesList();
@@ -4769,7 +4229,6 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
     function init() {
       setupEventListeners();
       updateViz();
-      renderExpenseManage();
       renderAdForm();
       renderAdsList();
       renderNotesList();
