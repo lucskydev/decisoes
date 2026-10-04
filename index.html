@@ -1405,7 +1405,10 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
     #vehicleManageList .vehicle-card-body, #modelManageList .vehicle-card-body { margin-top: 6px; padding-top: 10px; }
 
     /* ===== Critérios recolhíveis ===== */
-    #criteriaGrid { display: flex; flex-direction: column; gap: 6px; }
+    #criteriaGrid { display: grid; grid-template-columns: 1fr; gap: 6px; align-items: start; }
+    @media (min-width: 900px) { #criteriaGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } }
+    @media (min-width: 1400px) { #criteriaGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+    #criteriaGrid .criterion-card.is-open .criterion-card-body { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
     #criteriaGrid .criterion-card { padding: 6px 10px; gap: 0; border-radius: 12px; cursor: default; }
     #criteriaGrid .criterion-card:not(.is-open) { cursor: grab; }
     #criteriaGrid .criterion-card-head { gap: 6px; }
