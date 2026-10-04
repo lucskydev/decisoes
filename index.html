@@ -1390,6 +1390,19 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .vehicle-card .vehicle-card-titlebtn:hover { background: var(--surface-container-high, #e6e6e6); }
+    .vehicle-card .vehicle-card-titlebtn { display: flex; align-items: center; gap: 10px; }
+    .vehicle-card-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .vehicle-card-titlebtn .vehicle-thumb, .vehicle-card-titlebtn .vehicle-thumb-placeholder {
+      width: 44px; height: 32px; border-radius: 6px; flex-shrink: 0; cursor: pointer; font-size: 15px;
+    }
+    /* Lista de itens cadastrados: linhas condensadas, porém confortáveis */
+    #vehicleManageList { gap: 6px; }
+    #vehicleManageList .vehicle-card { padding: 6px 10px; gap: 0; }
+    #vehicleManageList .vehicle-card-head { gap: 6px; }
+    #vehicleManageList .vehicle-card-toggle { width: 28px; height: 28px; }
+    #vehicleManageList .vehicle-card .vehicle-card-titlebtn { min-height: 38px; padding: 3px 8px; }
+    #vehicleManageList .vehicle-card-head .action-btn-danger { min-height: 30px; padding: 0 12px; }
+    #vehicleManageList .vehicle-card-body { margin-top: 6px; padding-top: 10px; }
     .vehicle-card:not(.is-open) .vehicle-card-head .action-btn-danger { display: none; }
     .vehicle-card-toggle {
       display: inline-flex;
@@ -1797,6 +1810,9 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
     .analysis-select { width: auto; min-width: 150px; max-width: 240px; min-height: 32px; padding-top: 3px; padding-bottom: 3px; font-weight: 600; }
     @media (max-width: 600px) { .hdr-sep { display: none; } .header-actions { justify-content: flex-start; } }
     .header-action-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+    /* ===== Menu lateral: textos alinhados à esquerda (recolhido continua centralizado) ===== */
+    .tab-btn, .nav-toggle { justify-content: flex-start; text-align: left; }
 
     /* ===== Tela de análises: células condensadas ===== */
     #tab-ranking .ranking-table { font-size: 13px; }
@@ -2708,7 +2724,7 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
           <div class="vehicle-card${vehicleCardOpen.has(v.id) ? ' is-open' : ''}" data-vid="${esc(v.id)}">
             <div class="vehicle-card-head">
               <button type="button" class="vehicle-card-toggle" aria-label="Expandir ou recolher o item" aria-expanded="${vehicleCardOpen.has(v.id)}" onclick="toggleVehicleCard('${v.id}')">▸</button>
-              <button type="button" class="vehicle-card-titlebtn" aria-expanded="${vehicleCardOpen.has(v.id)}" title="Clique para expandir ou recolher" onclick="toggleVehicleCard('${v.id}')">${esc(v.name)}</button>
+              <button type="button" class="vehicle-card-titlebtn" aria-expanded="${vehicleCardOpen.has(v.id)}" title="Clique para expandir ou recolher" onclick="toggleVehicleCard('${v.id}')">${(v.images && v.images.main && v.images.main.url) ? `<img src="${esc(v.images.main.url)}" class="vehicle-thumb" alt="Foto de ${esc(v.name)}">` : '<span class="vehicle-thumb-placeholder">🚗</span>'}<span class="vehicle-card-name">${esc(v.name)}</span></button>
               <button class="action-btn-danger" onclick="deleteVehicle('${v.id}')">Excluir</button>
             </div>
             <div class="vehicle-card-body">
@@ -2790,7 +2806,7 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
       v.name = name;
       document.querySelectorAll('#vehicleManageList .vehicle-card').forEach(card => {
         if (card.dataset.vid === vid) {
-          const t = card.querySelector('.vehicle-card-titlebtn');
+          const t = card.querySelector('.vehicle-card-name');
           if (t) t.textContent = name;
         }
       });
