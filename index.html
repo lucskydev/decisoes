@@ -1404,6 +1404,32 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
     #vehicleManageList .vehicle-card-head .action-btn-danger, #modelManageList .vehicle-card-head .action-btn-danger { min-height: 30px; padding: 0 12px; }
     #vehicleManageList .vehicle-card-body, #modelManageList .vehicle-card-body { margin-top: 6px; padding-top: 10px; }
 
+    /* ===== Critérios recolhíveis ===== */
+    #criteriaGrid { display: flex; flex-direction: column; gap: 6px; }
+    #criteriaGrid .criterion-card { padding: 6px 10px; gap: 0; border-radius: 12px; cursor: default; }
+    #criteriaGrid .criterion-card:not(.is-open) { cursor: grab; }
+    #criteriaGrid .criterion-card-head { gap: 6px; }
+    #criteriaGrid .criterion-card-toggle {
+      display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; flex-shrink: 0; padding: 0;
+      background: none; border: none; border-radius: 8px; font-size: 14px; color: var(--on-surface-variant, rgba(0,0,0,.55));
+      cursor: pointer; transition: transform .15s;
+    }
+    #criteriaGrid .criterion-card-toggle:hover { background: var(--surface-container-high, #e6e6e6); }
+    #criteriaGrid .criterion-card.is-open .criterion-card-toggle { transform: rotate(90deg); }
+    #criteriaGrid .criterion-titlebtn {
+      flex: 1; min-width: 0; display: flex; align-items: center; justify-content: flex-start; gap: 8px; text-align: left;
+      min-height: 36px; padding: 3px 8px; background: transparent; border: none; border-radius: 8px; cursor: pointer;
+      color: var(--on-surface, #000); font-family: var(--ff-sans, sans-serif); font-size: 14px; font-weight: 600;
+    }
+    #criteriaGrid .criterion-titlebtn:hover { background: var(--surface-container-high, #e6e6e6); }
+    #criteriaGrid .criterion-title-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    #criteriaGrid .criterion-card:not(.is-open) .action-btn-danger { display: none; }
+    #criteriaGrid .criterion-card-head .action-btn-danger { min-height: 30px; padding: 0 12px; }
+    #criteriaGrid .criterion-card-body { display: none; margin-top: 6px; padding-top: 12px; border-top: 1px solid var(--stroke-default, #e3e3e3);
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px 20px; align-items: start; }
+    #criteriaGrid .criterion-card.is-open .criterion-card-body { display: grid; }
+    #criteriaGrid .crit-field-full { grid-column: 1 / -1; }
+
     /* ===== Modelos / vínculo ===== */
     .is-hidden { display: none !important; }
     .view-switch { display: inline-flex; align-self: flex-start; width: max-content; gap: 2px; padding: 3px; margin-bottom: 8px; background: var(--surface-dim, #f2f0f0);
@@ -2152,6 +2178,7 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
     // Estado apenas de interface (itens expandidos); não é salvo/exportado
     const vehicleCardOpen = new Set();
     const modelCardOpen = new Set();
+    const criterionCardOpen = new Set();
 
     // Calculate score (2 to 10) for a specific criteria value
     function calculateCriterionScore(value, criterion) {
@@ -2791,8 +2818,9 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
       let html = '';
       state.criteria.forEach((c, idx) => {
         const share = Math.round(c.weight / sumW * 100);
+        const open = criterionCardOpen.has(c.id);
         html += `
-          <div class="criterion-card" draggable="true"
+          <div class="criterion-card${open ? ' is-open' : ''}" draggable="${!open}"
             data-criterion-id="${c.id}"
             ondragstart="handleCriterionDragStart(event, '${c.id}')"
             ondragend="handleCriterionDragEnd(event)"
@@ -2804,9 +2832,16 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
               <input type="number" class="criterion-order-input" min="1" max="${total}" value="${idx + 1}"
                 title="Posição do critério" aria-label="Posição do critério"
                 onchange="moveCriterionToPosition('${c.id}', this.value)">
-              <input type="text" class="criterion-name-input" value="${esc(c.name)}"
-                aria-label="Nome do critério" onchange="updateCriterionName('${c.id}', this.value)">
+              <button type="button" class="criterion-card-toggle" aria-label="Expandir ou recolher o critério" aria-expanded="${open}" onclick="toggleCriterionCard('${c.id}')">▸</button>
+              <button type="button" class="criterion-titlebtn" aria-expanded="${open}" title="Clique para expandir ou recolher" onclick="toggleCriterionCard('${c.id}')"><span class="criterion-title-text">${esc(c.name)}</span>${hasFormula(c) ? '<span class="formula-col-tag" title="Calculado: ' + esc(c.formula) + '">ƒ</span>' : (criterionScope(c) === 'model' ? '<span class="src-tag" title="Valor vem do modelo">modelo</span>' : '')}</button>
               <button class="action-btn-danger" onclick="deleteCriterion('${c.id}')">Remover</button>
+            </div>
+
+            <div class="criterion-card-body">
+            <div class="crit-field-full">
+              <label class="lumi-body-s" style="font-size: 12px;">Nome do critério</label>
+              <input type="text" class="criterion-name-input" style="width: 100%;" value="${esc(c.name)}"
+                aria-label="Nome do critério" onchange="updateCriterionName('${c.id}', this.value)">
             </div>
 
             <div class="weight-block">
@@ -2847,12 +2882,25 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
               <label class="lumi-body-s" style="font-size: 12px;">Observações</label>
               <textarea class="note-input" placeholder="Anote como este critério deve ser interpretado..." oninput="updateCriterionNote('${c.id}', this.value)">${esc(c.note)}</textarea>
             </div>
+            </div>
           </div>
         `;
       });
 
       if (grid) grid.innerHTML = html;
     }
+
+    // Expande/recolhe um critério (sem recriar a lista; só cards recolhidos podem ser arrastados)
+    window.toggleCriterionCard = function(cid) {
+      const open = !criterionCardOpen.has(cid);
+      if (open) criterionCardOpen.add(cid); else criterionCardOpen.delete(cid);
+      document.querySelectorAll('#criteriaGrid .criterion-card').forEach(card => {
+        if (card.dataset.criterionId !== cid) return;
+        card.classList.toggle('is-open', open);
+        card.setAttribute('draggable', String(!open));
+        card.querySelectorAll('.criterion-card-toggle, .criterion-titlebtn').forEach(b => b.setAttribute('aria-expanded', String(open)));
+      });
+    };
 
     // Reordenação por arrastar-e-soltar
     let draggedCriterionId = null;
@@ -4765,6 +4813,8 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
             scope: 'item',
             note: ''
           });
+
+          criterionCardOpen.add(cId);   // abre o novo critério para configurar
 
           // Set default value for existing vehicles
           state.vehicles.forEach(v => {
