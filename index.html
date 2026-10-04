@@ -1396,13 +1396,40 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
       width: 44px; height: 32px; border-radius: 6px; flex-shrink: 0; cursor: pointer; font-size: 15px;
     }
     /* Lista de itens cadastrados: linhas condensadas, porém confortáveis */
-    #vehicleManageList { gap: 6px; }
-    #vehicleManageList .vehicle-card { padding: 6px 10px; gap: 0; }
-    #vehicleManageList .vehicle-card-head { gap: 6px; }
-    #vehicleManageList .vehicle-card-toggle { width: 28px; height: 28px; }
-    #vehicleManageList .vehicle-card .vehicle-card-titlebtn { min-height: 38px; padding: 3px 8px; }
-    #vehicleManageList .vehicle-card-head .action-btn-danger { min-height: 30px; padding: 0 12px; }
-    #vehicleManageList .vehicle-card-body { margin-top: 6px; padding-top: 10px; }
+    #vehicleManageList, #modelManageList { gap: 6px; }
+    #vehicleManageList .vehicle-card, #modelManageList .vehicle-card { padding: 6px 10px; gap: 0; }
+    #vehicleManageList .vehicle-card-head, #modelManageList .vehicle-card-head { gap: 6px; }
+    #vehicleManageList .vehicle-card-toggle, #modelManageList .vehicle-card-toggle { width: 28px; height: 28px; }
+    #vehicleManageList .vehicle-card .vehicle-card-titlebtn, #modelManageList .vehicle-card .vehicle-card-titlebtn { min-height: 38px; padding: 3px 8px; }
+    #vehicleManageList .vehicle-card-head .action-btn-danger, #modelManageList .vehicle-card-head .action-btn-danger { min-height: 30px; padding: 0 12px; }
+    #vehicleManageList .vehicle-card-body, #modelManageList .vehicle-card-body { margin-top: 6px; padding-top: 10px; }
+
+    /* ===== Modelos / vínculo ===== */
+    .is-hidden { display: none !important; }
+    .view-switch { display: inline-flex; align-self: flex-start; width: max-content; gap: 2px; padding: 3px; margin-bottom: 8px; background: var(--surface-dim, #f2f0f0);
+      border: 1px solid var(--stroke-default, #e3e3e3); border-radius: 999px; }
+    .view-switch .view-switch-btn { min-height: 28px; padding: 0 16px; font-size: 13px; font-weight: 600; background: transparent; border: none;
+      color: var(--on-surface-variant, rgba(0,0,0,.55)); border-radius: 999px; }
+    .view-switch .view-switch-btn.is-active { background: var(--accent-container, rgba(201,169,110,.25)); color: var(--accent-fixed, var(--on-surface, #000)); }
+    .item-model-tag { font-size: 11px; font-weight: 500; color: var(--on-surface-variant, rgba(0,0,0,.55)); max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+    .ranking-table td.cell-override { box-shadow: inset 3px 0 0 var(--accent, #c9a96e); }
+    .src-tag { margin-left: 6px; padding: 1px 7px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em;
+      border-radius: 999px; background: var(--accent-container, rgba(201,169,110,.25)); color: var(--accent-fixed, #c9a96e); vertical-align: middle; }
+    .src-tag.is-override { background: rgba(245,158,11,.2); color: #f59e0b; }
+    .inherit-row { display: flex; gap: 6px; align-items: center; }
+    .inherit-row .inline-val-input { flex: 1; min-width: 0; }
+    .inline-val-input.is-inherited { opacity: .75; }
+    .mini-btn { min-height: 32px; width: 34px; padding: 0; border-radius: 8px; flex-shrink: 0; }
+    .model-count { margin-left: auto; padding-right: 6px; font-size: 12px; font-weight: 500; color: var(--on-surface-variant, rgba(0,0,0,.55));
+      white-space: nowrap; flex-shrink: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; max-width: 45%; }
+    .model-hint, .inherit-hint { font-size: 12px; line-height: 17px; color: var(--on-surface-variant, rgba(0,0,0,.55)); }
+    #modelsHeader th.sortable { cursor: pointer; user-select: none; white-space: nowrap; }
+    #modelsHeader th.sortable:hover { color: var(--accent-fixed); }
+    #modelsHeader th.sortable:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+    #modelsHeader .sort-arrow { margin-left: 3px; font-size: 10px; opacity: .35; }
+    #modelsHeader th.is-sorted { color: var(--accent-fixed); }
+    #modelsHeader th.is-sorted .sort-arrow { opacity: 1; }
+
     .vehicle-card:not(.is-open) .vehicle-card-head .action-btn-danger { display: none; }
     .vehicle-card-toggle {
       display: inline-flex;
@@ -1953,6 +1980,7 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
       <button type="button" class="nav-toggle" id="navToggle" aria-expanded="true" aria-label="Recolher menu" data-label="Expandir menu"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 17l-5-5 5-5M18 17l-5-5 5-5"/></svg><span>Recolher menu</span></button>
       <button class="tab-btn is-active" data-tab="ranking" data-label="Análises" aria-label="Análises"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Análises</span></button>
       <button class="tab-btn" data-tab="criteria" data-label="Configurar Critérios & Pesos" aria-label="Configurar Critérios & Pesos"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h9M17 6h4M3 12h4M12 12h9M3 18h11M19 18h2"/><circle cx="14.5" cy="6" r="2.2"/><circle cx="9.5" cy="12" r="2.2"/><circle cx="16.5" cy="18" r="2.2"/></svg><span>Configurar Critérios & Pesos</span></button>
+      <button class="tab-btn" data-tab="models" data-label="Modelos" aria-label="Modelos"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 12.5l9 5 9-5"/><path d="M3 17l9 5 9-5"/></svg><span>Modelos</span></button>
       <button class="tab-btn" data-tab="vehicles" data-label="Gerenciar & Inserir Itens" aria-label="Gerenciar & Inserir Itens"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 17h16M5.5 17l1.7-6h9.6l1.7 6M7 20v-3M17 20v-3"/></svg><span>Gerenciar & Inserir Itens</span></button>
       <button class="tab-btn" data-tab="ads" data-label="Links" aria-label="Links"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12V3h9l9 9-9 9z"/><circle cx="7.5" cy="7.5" r="1.2"/></svg><span>Links</span></button>
       <button class="tab-btn" data-tab="notes" data-label="Anotações" aria-label="Anotações"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7"/></svg><span>Anotações</span></button>
@@ -1960,7 +1988,11 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
 
     <!-- Tab 1: Análises -->
     <div class="tab-content is-active" id="tab-ranking">
-      <div class="table-container">
+      <div class="view-switch" role="tablist" aria-label="O que comparar">
+        <button type="button" class="view-switch-btn is-active" data-view="items" role="tab" aria-selected="true">Itens</button>
+        <button type="button" class="view-switch-btn" data-view="models" role="tab" aria-selected="false">Modelos</button>
+      </div>
+      <div class="table-container" id="itemsTableWrap">
         <table class="ranking-table">
           <thead>
             <tr id="tableHeader">
@@ -1974,6 +2006,35 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
             <!-- Populated dynamically -->
           </tbody>
         </table>
+      </div>
+      <div id="modelsPanel" class="is-hidden">
+        <div class="model-hint is-hidden" id="modelsEmpty"></div>
+        <div class="table-container" id="modelsTableWrap">
+          <table class="ranking-table">
+            <thead><tr id="modelsHeader"></tr></thead>
+            <tbody id="modelsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Modelos -->
+    <div class="tab-content" id="tab-models">
+      <div class="control-deck">
+        <span class="lumi-body-m lumi-body-m-emphasized" id="modelListTitle">Modelos Cadastrados</span>
+        <div class="model-hint" id="modelHint">Um modelo guarda os valores dos critérios marcados como “Do modelo” (por exemplo, uma geração de veículo). Os itens vinculados a ele herdam esses valores.</div>
+        <div class="vehicle-list" id="modelManageList">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+      <div class="control-deck">
+        <span class="lumi-body-m lumi-body-m-emphasized">Cadastrar Novo Modelo</span>
+        <div class="form-grid" id="newModelForm">
+          <!-- Populated dynamically -->
+        </div>
+        <div class="btn-row">
+          <button class="action-btn" id="btnSaveModel">Adicionar Modelo</button>
+        </div>
       </div>
     </div>
 
@@ -2086,9 +2147,11 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
 
     state.ads = [];   // [{ id, description, year, price, fipePrice, image: {id,url}|null, link, comment }]
     state.notes = [];   // [{ id, title, content (HTML), updatedAt }]
+    state.models = [];  // [{ id, name, note, values: { [criterioId]: número }, images: { main, detail } }]
 
     // Estado apenas de interface (itens expandidos); não é salvo/exportado
     const vehicleCardOpen = new Set();
+    const modelCardOpen = new Set();
 
     // Calculate score (2 to 10) for a specific criteria value
     function calculateCriterionScore(value, criterion) {
@@ -2242,15 +2305,69 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
       return { order, cyclic };
     }
 
-    // Calcula o valor efetivo de cada critério para um item (fórmula ou valor digitado)
-    function computeVehicleValues(vehicle, order, cyclic) {
+    // ================= Modelos (templates) =================
+    // Cada critério tem uma origem: "item" (cada item tem o seu valor) ou "modelo"
+    // (o valor vem do modelo vinculado ao item, que pode sobrescrevê-lo).
+    const isFilled = x => x !== undefined && x !== null && x !== '' && Number.isFinite(Number(x));
+    const criterionScope = c => (c && c.scope === 'model') ? 'model' : 'item';
+    const hasFormula = c => !!(c && c.formula && c.formula.trim());
+
+    function getModelOf(v) {
+      return v && v.modelId ? (state.models.find(m => m.id === v.modelId) || null) : null;
+    }
+
+    // Valor digitado (não calculado) que vale para um item e de onde ele vem
+    function inputFor(v, c) {
+      if (criterionScope(c) === 'model') {
+        const m = getModelOf(v);
+        if (m) {
+          const ov = v.overrides ? v.overrides[c.id] : undefined;
+          if (isFilled(ov)) return { raw: ov, source: 'override' };
+          return { raw: m.values ? m.values[c.id] : undefined, source: 'model' };
+        }
+      }
+      return { raw: v.values ? v.values[c.id] : undefined, source: 'item' };
+    }
+
+    // Foto do próprio item ou, se não tiver, a do modelo vinculado
+    function itemImage(v, slot) {
+      const own = v.images && v.images[slot] && v.images[slot].url ? v.images[slot] : null;
+      if (own) return own;
+      const m = getModelOf(v);
+      return m && m.images && m.images[slot] && m.images[slot].url ? m.images[slot] : null;
+    }
+
+    // Desvincula o item do modelo mantendo os valores e fotos que ele estava usando
+    function detachVehicleFromModel(v) {
+      const m = getModelOf(v);
+      if (m) {
+        if (!v.values) v.values = {};
+        state.criteria.forEach(c => {
+          if (criterionScope(c) !== 'model' || hasFormula(c)) return;
+          const { raw } = inputFor(v, c);
+          if (isFilled(raw)) v.values[c.id] = Number(raw);
+        });
+        if (!v.images) v.images = { main: null, detail: null };
+        ['main', 'detail'].forEach(slot => {
+          if (!(v.images[slot] && v.images[slot].url) && m.images && m.images[slot] && m.images[slot].url) {
+            v.images[slot] = { id: null, url: m.images[slot].url };   // id nulo: nunca apaga o arquivo compartilhado
+          }
+        });
+      }
+      v.modelId = null;
+      v.overrides = {};
+    }
+
+    // Calcula o valor efetivo de cada critério (fórmula ou valor digitado).
+    // `vehicle` pode ser um item ou, com modelOnly=true, um modelo (só critérios "do modelo").
+    function computeVehicleValues(vehicle, order, cyclic, modelOnly) {
       const valueMap = {};
       const errors = {};
       order.forEach(id => {
         const c = state.criteria.find(x => x.id === id);
         if (!c) return;
         if (cyclic.has(id)) { errors[id] = 'Referência circular entre critérios'; valueMap[id] = NaN; return; }
-        if (c.formula && c.formula.trim()) {
+        if (hasFormula(c)) {
           try {
             const tokens = tokenizeFormula(state.criteria, c.formula);
             valueMap[id] = evalFormulaTokens(tokens, valueMap);
@@ -2258,9 +2375,16 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
             errors[id] = err.message;
             valueMap[id] = NaN;
           }
+        } else if (modelOnly) {
+          if (criterionScope(c) === 'model') {
+            const raw = vehicle.values ? vehicle.values[id] : undefined;
+            valueMap[id] = isFilled(raw) ? Number(raw) : c.min;
+          } else {
+            valueMap[id] = NaN;   // não se aplica a modelos
+          }
         } else {
-          const raw = vehicle.values ? vehicle.values[id] : undefined;
-          valueMap[id] = raw !== undefined && raw !== null && raw !== '' ? Number(raw) : c.min;
+          const { raw } = inputFor(vehicle, c);
+          valueMap[id] = isFilled(raw) ? Number(raw) : c.min;
         }
       });
       return { valueMap, errors };
@@ -2308,6 +2432,40 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
           criteriaScores,
           criteriaValues,
           criteriaErrors: errors
+        };
+      }).sort((a, b) => b.finalScore - a.finalScore);
+    }
+
+    // Ranking dos modelos (só entram critérios "do modelo" e fórmulas que dependem apenas deles)
+    function getRankedModels() {
+      const { order, cyclic } = getCriteriaEvalOrder();
+      return state.models.map(m => {
+        const { valueMap, errors } = computeVehicleValues(m, order, cyclic, true);
+        const criteriaScores = {};
+        const criteriaValues = {};
+        let totalWeightedScore = 0;
+        let totalWeight = 0;
+        state.criteria.forEach(c => {
+          const raw = valueMap[c.id];
+          const valid = typeof raw === 'number' && Number.isFinite(raw);
+          criteriaValues[c.id] = valid ? raw : null;
+          if (valid) {
+            const score = calculateCriterionScore(raw, c);
+            criteriaScores[c.id] = score;
+            totalWeightedScore += score * c.weight;
+            totalWeight += c.weight;
+          } else {
+            criteriaScores[c.id] = null;
+          }
+        });
+        const finalScore = totalWeight > 0 ? totalWeightedScore / totalWeight : 0;
+        return {
+          ...m,
+          finalScore: parseFloat(finalScore.toFixed(2)),
+          criteriaScores,
+          criteriaValues,
+          criteriaErrors: errors,
+          itemCount: state.vehicles.filter(v => v.modelId === m.id).length
         };
       }).sort((a, b) => b.finalScore - a.finalScore);
     }
@@ -2390,13 +2548,14 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
         const isTop = rankNum === 1;
         const finalCls = finalVaries ? cellClass(v.finalScore, finalMax, finalMin) : '';
 
-        const mainImg = v.images && v.images.main && v.images.main.url;
-        const detailImg = v.images && v.images.detail && v.images.detail.url;
+        const mainImg = (itemImage(v, 'main') || {}).url;
+        const detailImg = (itemImage(v, 'detail') || {}).url;
+        const itemModel = getModelOf(v);
 
         bodyHTML += `<tr class="${isTop ? 'is-top' : ''}">
           <td><span class="rank-badge ${badgeClass}">#${rankNum}</span></td>
           <td>${mainImg ? `<img src="${esc(mainImg)}" class="vehicle-thumb" alt="Foto de ${esc(v.name)}">` : '<div class="vehicle-thumb-placeholder">🚗</div>'}</td>
-          <td style="font-weight: 600;">${esc(v.name)}${noteIcon(v.note)}</td>
+          <td style="font-weight: 600;">${esc(v.name)}${noteIcon(v.note)}${itemModel ? `<div class="item-model-tag" title="Modelo vinculado">${esc(itemModel.name)}</div>` : ''}</td>
           <td class="${finalCls}">
             <div class="score-progress">
               <div class="score-fill" style="width: ${(v.finalScore * 10)}%;"></div>
@@ -2419,8 +2578,9 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
           const score = typeof scoreNum === 'number' ? scoreNum.toFixed(1) : '-';
           const range = criterionRange[c.id];
           const cls = range ? cellClass(scoreNum, range.max, range.min) : '';
+          const ovr = !hasFormula(c) && inputFor(v, c).source === 'override';
           bodyHTML += `
-            <td class="${cls}">
+            <td class="${cls}${ovr ? ' cell-override' : ''}"${ovr ? ' title="Valor sobrescrito neste item"' : ''}>
               <span style="font-family: var(--ff-mono, monospace);">${val}</span>
               <span style="font-size: 12px; color: var(--on-surface-variant, rgba(0,0,0,0.55)); margin-left: 4px;">(${score}pt)</span>
             </td>`;
@@ -2434,6 +2594,146 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
 
       tableBody.innerHTML = bodyHTML;
     }
+
+    // ---- Comparação entre modelos (aba Análises > Modelos) ----
+    let analysisView = 'items';
+    const modelSort = { key: 'pos', dir: 'asc' };
+
+    function setAnalysisView(view) {
+      analysisView = view === 'models' ? 'models' : 'items';
+      document.querySelectorAll('.view-switch-btn').forEach(b => {
+        const on = b.dataset.view === analysisView;
+        b.classList.toggle('is-active', on);
+        b.setAttribute('aria-selected', String(on));
+      });
+      document.getElementById('itemsTableWrap')?.classList.toggle('is-hidden', analysisView !== 'items');
+      document.getElementById('modelsPanel')?.classList.toggle('is-hidden', analysisView !== 'models');
+      if (analysisView === 'models') renderModelsTable(getRankedModels()); else renderTable(getRankedVehicles());
+    }
+
+    function renderModelsTable(ranked) {
+      const headerTr = document.getElementById('modelsHeader');
+      const body = document.getElementById('modelsBody');
+      const wrap = document.getElementById('modelsTableWrap');
+      const empty = document.getElementById('modelsEmpty');
+      if (!headerTr || !body || !wrap || !empty) return;
+
+      // colunas: critérios "do modelo" e fórmulas que conseguem ser calculadas só com eles
+      const cols = state.criteria.filter(c => hasFormula(c)
+        ? ranked.some(r => r.criteriaValues[c.id] !== null && r.criteriaValues[c.id] !== undefined)
+        : criterionScope(c) === 'model');
+
+      if (!ranked.length || !cols.length) {
+        headerTr.innerHTML = ''; body.innerHTML = '';
+        wrap.classList.add('is-hidden');
+        empty.classList.remove('is-hidden');
+        empty.textContent = !ranked.length
+          ? 'Nenhum modelo cadastrado. Crie modelos na aba “Modelos”.'
+          : 'Nenhum critério está marcado como “Do modelo”. Defina a origem de cada critério na aba “Configurar Critérios & Pesos”.';
+        return;
+      }
+      wrap.classList.remove('is-hidden');
+      empty.classList.add('is-hidden');
+
+      const sortTh = (key, inner) => {
+        const on = modelSort.key === key;
+        const arrow = on ? (modelSort.dir === 'asc' ? '▲' : '▼') : '↕';
+        return `<th class="sortable${on ? ' is-sorted' : ''}" data-msort="${esc(key)}" tabindex="0" role="columnheader" aria-sort="${on ? (modelSort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}" title="Clique para ordenar">${inner}<span class="sort-arrow" aria-hidden="true">${arrow}</span></th>`;
+      };
+      let headerHTML = `${sortTh('pos', 'Pos.')}<th>Foto</th>${sortTh('name', 'Modelo')}${sortTh('final', 'Nota Final')}`;
+      cols.forEach(c => {
+        const formulaTag = hasFormula(c) ? ` <span class="formula-col-tag" title="Calculado: ${esc(c.formula)}">ƒ</span>` : '';
+        headerHTML += sortTh('c:' + c.id, `${esc(c.name)} <span style="font-size: 12px; font-weight: normal; opacity: 0.7;">(P:${c.weight})</span>${formulaTag}${noteIcon(c.note)}`);
+      });
+      headerHTML += `<th>Foto extra</th>${sortTh('items', 'Itens')}`;
+      headerTr.innerHTML = headerHTML;
+
+      const finalScores = ranked.map(m => m.finalScore);
+      const finalMax = Math.max(...finalScores), finalMin = Math.min(...finalScores);
+      const range = {};
+      cols.forEach(c => {
+        const sc = ranked.map(m => m.criteriaScores[c.id]).filter(x => typeof x === 'number' && !isNaN(x));
+        if (!sc.length) { range[c.id] = null; return; }
+        const max = Math.max(...sc), min = Math.min(...sc);
+        range[c.id] = max !== min ? { max, min } : null;
+      });
+      const cellClass = (val, max, min) => val === max ? ' cell-best' : val === min ? ' cell-worst' : '';
+
+      const rankOf = new Map(ranked.map((m, i) => [m, i + 1]));
+      const sortVal = m => {
+        if (modelSort.key === 'pos') return rankOf.get(m);
+        if (modelSort.key === 'name') return String(m.name || '');
+        if (modelSort.key === 'final') return m.finalScore;
+        if (modelSort.key === 'items') return m.itemCount;
+        const raw = m.criteriaValues[modelSort.key.slice(2)];
+        return typeof raw === 'number' && Number.isFinite(raw) ? raw : null;
+      };
+      const mult = modelSort.dir === 'asc' ? 1 : -1;
+      const rows = ranked.slice().sort((a, b) => {
+        const x = sortVal(a), y = sortVal(b);
+        if (x === null && y === null) return rankOf.get(a) - rankOf.get(b);
+        if (x === null) return 1;
+        if (y === null) return -1;
+        const cmp = typeof x === 'string' ? x.localeCompare(y, 'pt-BR', { sensitivity: 'base' }) : x - y;
+        return cmp !== 0 ? cmp * mult : rankOf.get(a) - rankOf.get(b);
+      });
+
+      let html = '';
+      rows.forEach(m => {
+        const n = rankOf.get(m);
+        const badge = n === 1 ? 'rank-1' : n === 2 ? 'rank-2' : n === 3 ? 'rank-3' : 'rank-other';
+        const finalVaries = finalMax !== finalMin;
+        const finalCls = finalVaries ? cellClass(m.finalScore, finalMax, finalMin) : '';
+        const mainImg = m.images && m.images.main && m.images.main.url;
+        const detailImg = m.images && m.images.detail && m.images.detail.url;
+        html += `<tr class="${n === 1 ? 'is-top' : ''}">
+          <td><span class="rank-badge ${badge}">#${n}</span></td>
+          <td>${mainImg ? `<img src="${esc(mainImg)}" class="vehicle-thumb" alt="Foto de ${esc(m.name)}">` : '<div class="vehicle-thumb-placeholder">🚗</div>'}</td>
+          <td style="font-weight: 600;">${esc(m.name)}${noteIcon(m.note)}</td>
+          <td class="${finalCls}">
+            <div class="score-progress"><div class="score-fill" style="width: ${(m.finalScore * 10)}%;"></div></div>
+            <strong style="font-family: var(--ff-mono, monospace);">${m.finalScore.toFixed(2)}</strong>
+          </td>`;
+        cols.forEach(c => {
+          const rawVal = m.criteriaValues[c.id];
+          if (rawVal === null || rawVal === undefined) { html += '<td><span class="vehicle-empty">—</span></td>'; return; }
+          const val = Number.isInteger(rawVal) ? rawVal : rawVal.toFixed(2);
+          const sc = m.criteriaScores[c.id];
+          const r = range[c.id];
+          html += `<td class="${r ? cellClass(sc, r.max, r.min).trim() : ''}">
+            <span style="font-family: var(--ff-mono, monospace);">${val}</span>
+            <span style="font-size: 12px; color: var(--on-surface-variant, rgba(0,0,0,0.55)); margin-left: 4px;">(${typeof sc === 'number' ? sc.toFixed(1) : '-'}pt)</span>
+          </td>`;
+        });
+        html += `
+          <td>${detailImg ? `<button type="button" class="image-reveal-btn" onclick="showImageModal('${esc(detailImg)}', '${esc(m.name)}')" title="Ver foto extra">📷</button>` : '<span class="vehicle-empty" style="font-size: 12px;">—</span>'}</td>
+          <td>${m.itemCount ? `${m.itemCount} ${m.itemCount === 1 ? 'item' : 'itens'}` : '<span class="vehicle-empty" style="font-size: 12px;">—</span>'}</td>
+        </tr>`;
+      });
+      body.innerHTML = html;
+    }
+
+    (function setupModelsView() {
+      const apply = th => {
+        if (!th) return;
+        const key = th.getAttribute('data-msort');
+        if (modelSort.key === key) modelSort.dir = modelSort.dir === 'asc' ? 'desc' : 'asc';
+        else { modelSort.key = key; modelSort.dir = 'asc'; }
+        renderModelsTable(getRankedModels());
+      };
+      document.addEventListener('click', e => {
+        const t = e.target.closest ? e.target : null;
+        if (!t) return;
+        apply(t.closest('#modelsHeader th.sortable'));
+        const b = t.closest('.view-switch-btn');
+        if (b) setAnalysisView(b.dataset.view);
+      });
+      document.addEventListener('keydown', e => {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        const th = e.target.closest && e.target.closest('#modelsHeader th.sortable');
+        if (th) { e.preventDefault(); apply(th); }
+      });
+    })();
 
     (function setupNavCollapse() {
       const root = document.documentElement;
@@ -2524,6 +2824,15 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
               <input type="checkbox" id="orient_${c.id}" ${c.higherIsBetter ? 'checked' : ''} onchange="updateCriterionOrientation('${c.id}', this.checked)">
               <label for="orient_${c.id}" class="lumi-body-s" style="font-size: 12px; cursor: pointer;">Maior valor é melhor</label>
             </div>
+
+            ${hasFormula(c) ? '' : `
+            <div style="margin-top: 4px;">
+              <label class="lumi-body-s" style="font-size: 12px;" for="scope_${c.id}">Origem do valor</label>
+              <select class="ad-select" id="scope_${c.id}" onchange="updateCriterionScope('${c.id}', this.value)">
+                <option value="item"${criterionScope(c) === 'item' ? ' selected' : ''}>Do item (cada item tem o seu valor)</option>
+                <option value="model"${criterionScope(c) === 'model' ? ' selected' : ''}>Do modelo (herdado do modelo vinculado ao item)</option>
+              </select>
+            </div>`}
 
             <div style="margin-top: 4px;">
               <label class="lumi-body-s" style="font-size: 12px;">Fórmula (opcional — calcula o valor a partir de outros critérios)</label>
@@ -2648,28 +2957,46 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
     };
 
     // Render Vehicle Form (preserva o que já foi digitado)
+    window.onNewVehicleModelChange = function() { renderVehicleForm(); };
+
     function renderVehicleForm() {
       const formGrid = document.getElementById('newVehicleForm');
       if (!formGrid) return;
 
       const prev = {};
-      formGrid.querySelectorAll('input, textarea').forEach(el => { if (el.id) prev[el.id] = el.value; });
+      formGrid.querySelectorAll('input, textarea, select').forEach(el => { if (el.id) prev[el.id] = el.value; });
+      const model = state.models.find(m => m.id === prev.inputCarModel) || null;
 
       let html = `
         <div class="form-group">
-          <label class="lumi-body-s">Nome do Item / Modelo</label>
+          <label class="lumi-body-s">Nome do Item</label>
           <input type="text" class="lumi-input" id="inputCarName" placeholder="Ex: SUV Híbrido Flex">
         </div>
       `;
 
+      if (state.models.length) {
+        html += `
+        <div class="form-group">
+          <label class="lumi-body-s">Modelo</label>
+          <select class="ad-select" id="inputCarModel" onchange="onNewVehicleModelChange()">
+            <option value="">Sem modelo (preencher os critérios no item)</option>
+            ${state.models.map(m => `<option value="${esc(m.id)}">${esc(m.name)}</option>`).join('')}
+          </select>
+        </div>`;
+      }
+
       state.criteria.forEach(c => {
-        const isFormula = c.formula && c.formula.trim();
+        const isFormula = hasFormula(c);
+        const inherited = !!model && !isFormula && criterionScope(c) === 'model';
+        const mv = inherited && model.values && isFilled(model.values[c.id]) ? model.values[c.id] : '';
         html += `
           <div class="form-group">
-            <label class="lumi-body-s">${esc(c.name)}${isFormula ? ' <span class="formula-col-tag" title="Calculado: ' + esc(c.formula) + '">ƒ</span>' : ''}${noteIcon(c.note)}</label>
+            <label class="lumi-body-s">${esc(c.name)}${isFormula ? ' <span class="formula-col-tag" title="Calculado: ' + esc(c.formula) + '">ƒ</span>' : ''}${noteIcon(c.note)}${inherited ? `<span class="src-tag" title="Valor herdado do modelo ${esc(model.name)}">modelo</span>` : ''}</label>
             ${isFormula
               ? `<input type="text" class="lumi-input is-computed" value="Calculado após salvar" disabled title="Fórmula: ${esc(c.formula)}">`
-              : `<input type="number" class="lumi-input" id="inputCar_${c.id}" placeholder="${c.min} - ${c.max}" step="0.1">`}
+              : inherited
+                ? `<input type="text" class="lumi-input is-computed" value="${esc(String(mv))}" disabled title="Valor herdado do modelo ${esc(model.name)}">`
+                : `<input type="number" class="lumi-input" id="inputCar_${c.id}" placeholder="${c.min} - ${c.max}" step="0.1">`}
           </div>
         `;
       });
@@ -2720,11 +3047,16 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
       let html = '';
       state.vehicles.forEach(v => {
         const { valueMap, errors } = computeVehicleValues(v, order, cyclic);
+        const open = vehicleCardOpen.has(v.id);
+        const thumb = itemImage(v, 'main');
+        const model = getModelOf(v);
+        const ownMain = !!(v.images && v.images.main && v.images.main.url);
+        const ownDetail = !!(v.images && v.images.detail && v.images.detail.url);
         html += `
-          <div class="vehicle-card${vehicleCardOpen.has(v.id) ? ' is-open' : ''}" data-vid="${esc(v.id)}">
+          <div class="vehicle-card${open ? ' is-open' : ''}" data-vid="${esc(v.id)}">
             <div class="vehicle-card-head">
-              <button type="button" class="vehicle-card-toggle" aria-label="Expandir ou recolher o item" aria-expanded="${vehicleCardOpen.has(v.id)}" onclick="toggleVehicleCard('${v.id}')">▸</button>
-              <button type="button" class="vehicle-card-titlebtn" aria-expanded="${vehicleCardOpen.has(v.id)}" title="Clique para expandir ou recolher" onclick="toggleVehicleCard('${v.id}')">${(v.images && v.images.main && v.images.main.url) ? `<img src="${esc(v.images.main.url)}" class="vehicle-thumb" alt="Foto de ${esc(v.name)}">` : '<span class="vehicle-thumb-placeholder">🚗</span>'}<span class="vehicle-card-name">${esc(v.name)}</span></button>
+              <button type="button" class="vehicle-card-toggle" aria-label="Expandir ou recolher o item" aria-expanded="${open}" onclick="toggleVehicleCard('${v.id}')">▸</button>
+              <button type="button" class="vehicle-card-titlebtn" aria-expanded="${open}" title="Clique para expandir ou recolher" onclick="toggleVehicleCard('${v.id}')">${thumb ? `<img src="${esc(thumb.url)}" class="vehicle-thumb" alt="Foto de ${esc(v.name)}">` : '<span class="vehicle-thumb-placeholder">🚗</span>'}<span class="vehicle-card-name">${esc(v.name)}</span>${model ? `<span class="model-count" title="Modelo vinculado">${esc(model.name)}</span>` : ''}</button>
               <button class="action-btn-danger" onclick="deleteVehicle('${v.id}')">Excluir</button>
             </div>
             <div class="vehicle-card-body">
@@ -2732,9 +3064,17 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
               <label class="lumi-body-s">Nome do item</label>
               <input type="text" class="vehicle-name-input" value="${esc(v.name)}" aria-label="Nome do item" onchange="updateVehicleName('${v.id}', this.value)">
             </div>
+            ${state.models.length ? `
+            <div class="form-group">
+              <label class="lumi-body-s">Modelo</label>
+              <select class="ad-select" aria-label="Modelo do item" onchange="setVehicleModel('${v.id}', this.value)">
+                <option value="">Sem modelo (critérios preenchidos neste item)</option>
+                ${state.models.map(m => `<option value="${esc(m.id)}"${model && model.id === m.id ? ' selected' : ''}>${esc(m.name)}</option>`).join('')}
+              </select>
+            </div>` : ''}
             <div class="form-grid">`;
         state.criteria.forEach(c => {
-          const isFormula = c.formula && c.formula.trim();
+          const isFormula = hasFormula(c);
           const labelHtml = `${esc(c.name)}${isFormula ? ' <span class="formula-col-tag" title="Calculado: ' + esc(c.formula) + '">ƒ</span>' : ''}${noteIcon(c.note)}`;
           if (isFormula) {
             const hasErr = errors[c.id];
@@ -2745,8 +3085,29 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
                 <label class="lumi-body-s">${labelHtml}</label>
                 <input type="text" class="inline-val-input is-computed" value="${esc(String(displayVal))}" disabled title="${hasErr ? esc(hasErr) : 'Fórmula: ' + esc(c.formula)}">
               </div>`;
+            return;
+          }
+          const src = inputFor(v, c);
+          const val = isFilled(src.raw) ? src.raw : '';
+          if (src.source === 'model') {
+            html += `
+              <div class="form-group">
+                <label class="lumi-body-s">${labelHtml}<span class="src-tag" title="Valor herdado do modelo ${esc(model.name)}">modelo</span></label>
+                <div class="inherit-row">
+                  <input type="number" class="inline-val-input is-inherited" value="${val}" disabled title="Valor herdado do modelo ${esc(model.name)}">
+                  <button type="button" class="mini-btn" title="Sobrescrever neste item" aria-label="Sobrescrever neste item" onclick="overrideCriterion('${v.id}', '${c.id}')">✎</button>
+                </div>
+              </div>`;
+          } else if (src.source === 'override') {
+            html += `
+              <div class="form-group">
+                <label class="lumi-body-s">${labelHtml}<span class="src-tag is-override" title="Valor sobrescrito neste item">sobrescrito</span></label>
+                <div class="inherit-row">
+                  <input type="number" class="inline-val-input" value="${val}" step="0.1" onchange="updateVehicleOverride('${v.id}', '${c.id}', this.value)">
+                  <button type="button" class="mini-btn" title="Voltar ao valor do modelo" aria-label="Voltar ao valor do modelo" onclick="restoreCriterion('${v.id}', '${c.id}')">↺</button>
+                </div>
+              </div>`;
           } else {
-            const val = v.values[c.id] !== undefined ? v.values[c.id] : '';
             html += `
               <div class="form-group">
                 <label class="lumi-body-s">${labelHtml}</label>
@@ -2763,6 +3124,7 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
               onClear: `clearVehicleImage('${v.id}', 'main')`,
               statusId: `vehImg_main_${v.id}_status`
             })}
+            ${!ownMain && thumb ? '<div class="inherit-hint field-full">Usando a foto principal do modelo. Envie uma foto para substituir.</div>' : ''}
             ${imageFieldHTML({
               label: 'Foto extra (exibida ao clicar na análise)',
               image: v.images && v.images.detail,
@@ -2770,6 +3132,7 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
               onClear: `clearVehicleImage('${v.id}', 'detail')`,
               statusId: `vehImg_detail_${v.id}_status`
             })}
+            ${!ownDetail && itemImage(v, 'detail') ? '<div class="inherit-hint field-full">Usando a foto extra do modelo. Envie uma foto para substituir.</div>' : ''}
             <div class="form-group">
               <label class="lumi-body-s">Observações</label>
               <textarea class="note-input" placeholder="Anotações sobre este item (opcional)" oninput="updateVehicleNote('${v.id}', this.value)">${esc(v.note)}</textarea>
@@ -2780,10 +3143,244 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
       list.innerHTML = html;
     }
 
+    // ================= Aba Modelos =================
+    function renderModelForm() {
+      const formGrid = document.getElementById('newModelForm');
+      if (!formGrid) return;
+      const prev = {};
+      formGrid.querySelectorAll('input, textarea').forEach(el => { if (el.id) prev[el.id] = el.value; });
+
+      let html = `
+        <div class="form-group">
+          <label class="lumi-body-s">Nome do Modelo</label>
+          <input type="text" class="lumi-input" id="inputModelName" placeholder="Ex: Honda CR-V 2006–2011">
+        </div>`;
+      state.criteria.forEach(c => {
+        if (criterionScope(c) !== 'model' || hasFormula(c)) return;
+        html += `
+        <div class="form-group">
+          <label class="lumi-body-s">${esc(c.name)}${noteIcon(c.note)}</label>
+          <input type="number" class="lumi-input" id="inputModel_${c.id}" placeholder="${c.min} - ${c.max}" step="0.1">
+        </div>`;
+      });
+      html += `
+        <div class="form-group field-full">
+          <label class="lumi-body-s">Observações</label>
+          <textarea class="note-input" id="inputModelNotes" placeholder="Anotações sobre este modelo (opcional)"></textarea>
+        </div>`;
+      formGrid.innerHTML = html;
+      Object.keys(prev).forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = prev[id];
+      });
+    }
+
+    function renderModelManageList() {
+      const list = document.getElementById('modelManageList');
+      const title = document.getElementById('modelListTitle');
+      const hint = document.getElementById('modelHint');
+      if (!list) return;
+      if (title) title.textContent = `Modelos Cadastrados (${state.models.length})`;
+      const hasModelCriteria = state.criteria.some(c => criterionScope(c) === 'model');
+      if (hint) {
+        hint.textContent = hasModelCriteria
+          ? 'Um modelo guarda os valores dos critérios marcados como “Do modelo”. Os itens vinculados a ele herdam esses valores e podem sobrescrevê-los.'
+          : 'Nenhum critério está marcado como “Do modelo”. Na aba “Configurar Critérios & Pesos”, escolha a origem do valor de cada critério (por exemplo, consumo e porta-malas vêm do modelo; preço e quilometragem, do item).';
+      }
+      if (state.models.length === 0) {
+        list.innerHTML = '<div class="vehicle-empty">Nenhum modelo cadastrado.</div>';
+        return;
+      }
+
+      const { order, cyclic } = getCriteriaEvalOrder();
+      let html = '';
+      state.models.forEach(m => {
+        const { valueMap } = computeVehicleValues(m, order, cyclic, true);
+        const open = modelCardOpen.has(m.id);
+        const count = state.vehicles.filter(v => v.modelId === m.id).length;
+        const thumb = m.images && m.images.main && m.images.main.url;
+        let fields = '';
+        state.criteria.forEach(c => {
+          const labelHtml = `${esc(c.name)}${hasFormula(c) ? ' <span class="formula-col-tag" title="Calculado: ' + esc(c.formula) + '">ƒ</span>' : ''}${noteIcon(c.note)}`;
+          if (hasFormula(c)) {
+            const v = valueMap[c.id];
+            if (typeof v !== 'number' || !Number.isFinite(v)) return;   // depende de critérios do item: não se aplica ao modelo
+            fields += `
+              <div class="form-group">
+                <label class="lumi-body-s">${labelHtml}</label>
+                <input type="text" class="inline-val-input is-computed" value="${esc(String(Number.isInteger(v) ? v : v.toFixed(2)))}" disabled title="Fórmula: ${esc(c.formula)}">
+              </div>`;
+          } else if (criterionScope(c) === 'model') {
+            const raw = m.values ? m.values[c.id] : undefined;
+            fields += `
+              <div class="form-group">
+                <label class="lumi-body-s">${labelHtml}</label>
+                <input type="number" class="inline-val-input" value="${isFilled(raw) ? raw : ''}" step="0.1" onchange="updateModelValue('${m.id}', '${c.id}', this.value)">
+              </div>`;
+          }
+        });
+        html += `
+          <div class="vehicle-card${open ? ' is-open' : ''}" data-mid="${esc(m.id)}">
+            <div class="vehicle-card-head">
+              <button type="button" class="vehicle-card-toggle" aria-label="Expandir ou recolher o modelo" aria-expanded="${open}" onclick="toggleModelCard('${m.id}')">▸</button>
+              <button type="button" class="vehicle-card-titlebtn" aria-expanded="${open}" title="Clique para expandir ou recolher" onclick="toggleModelCard('${m.id}')">${thumb ? `<img src="${esc(thumb)}" class="vehicle-thumb" alt="Foto de ${esc(m.name)}">` : '<span class="vehicle-thumb-placeholder">🚗</span>'}<span class="vehicle-card-name">${esc(m.name)}</span><span class="model-count">${count} ${count === 1 ? 'item' : 'itens'}</span></button>
+              <button class="action-btn-danger" onclick="deleteModel('${m.id}')">Excluir</button>
+            </div>
+            <div class="vehicle-card-body">
+            <div class="form-group">
+              <label class="lumi-body-s">Nome do modelo</label>
+              <input type="text" class="vehicle-name-input" value="${esc(m.name)}" aria-label="Nome do modelo" onchange="updateModelName('${m.id}', this.value)">
+            </div>
+            ${fields ? `<div class="form-grid">${fields}</div>` : '<div class="model-hint">Nenhum critério “Do modelo” para preencher.</div>'}
+            ${imageFieldHTML({
+              label: 'Foto principal (aparece na análise)',
+              image: m.images && m.images.main,
+              onChange: `updateModelImage('${m.id}', 'main', this)`,
+              onClear: `clearModelImage('${m.id}', 'main')`,
+              statusId: `modelImg_main_${m.id}_status`
+            })}
+            ${imageFieldHTML({
+              label: 'Foto extra (exibida ao clicar na análise)',
+              image: m.images && m.images.detail,
+              onChange: `updateModelImage('${m.id}', 'detail', this)`,
+              onClear: `clearModelImage('${m.id}', 'detail')`,
+              statusId: `modelImg_detail_${m.id}_status`
+            })}
+            <div class="form-group">
+              <label class="lumi-body-s">Observações</label>
+              <textarea class="note-input" placeholder="Anotações sobre este modelo (opcional)" oninput="updateModelNote('${m.id}', this.value)">${esc(m.note)}</textarea>
+            </div>
+            </div>
+          </div>`;
+      });
+      list.innerHTML = html;
+    }
+
+    // Atualiza tabelas e listas que dependem dos dados do modelo (sem recriar a lista de modelos sob o cursor)
+    function refreshAfterModelEdit() {
+      refreshRanking();
+      renderVehicleManageList();
+      renderVehicleForm();
+    }
+
+    window.toggleModelCard = function(mid) {
+      const open = !modelCardOpen.has(mid);
+      if (open) modelCardOpen.add(mid); else modelCardOpen.delete(mid);
+      document.querySelectorAll('#modelManageList .vehicle-card').forEach(card => {
+        if (card.dataset.mid !== mid) return;
+        card.classList.toggle('is-open', open);
+        card.querySelectorAll('.vehicle-card-toggle, .vehicle-card-titlebtn').forEach(b => b.setAttribute('aria-expanded', String(open)));
+      });
+    };
+
+    window.updateModelName = function(mid, val) {
+      const m = state.models.find(x => x.id === mid);
+      if (!m) return;
+      const name = String(val).trim();
+      if (!name) { showAlert('O nome do modelo não pode ficar vazio.'); renderModelManageList(); return; }
+      m.name = name;
+      document.querySelectorAll('#modelManageList .vehicle-card').forEach(card => {
+        if (card.dataset.mid === mid) {
+          const t = card.querySelector('.vehicle-card-name');
+          if (t) t.textContent = name;
+        }
+      });
+      refreshAfterModelEdit();
+    };
+
+    window.updateModelValue = function(mid, cid, val) {
+      const m = state.models.find(x => x.id === mid);
+      if (!m) return;
+      if (!m.values) m.values = {};
+      m.values[cid] = parseFloat(val) || 0;
+      refreshAfterModelEdit();
+    };
+
+    window.updateModelNote = function(mid, val) {
+      const m = state.models.find(x => x.id === mid);
+      if (m) { m.note = val; schedulePersist(); }
+    };
+
+    window.updateModelImage = async function(mid, slot, inputEl) {
+      const m = state.models.find(x => x.id === mid);
+      if (!m) return;
+      const file = inputEl.files && inputEl.files[0];
+      if (!file) return;
+      const statusEl = document.getElementById(`modelImg_${slot}_${mid}_status`);
+      if (statusEl) statusEl.textContent = 'Enviando imagem…';
+      const oldImg = m.images ? m.images[slot] : null;
+      const img = await uploadVehicleImage(file);
+      if (!img) { if (statusEl) statusEl.textContent = ''; return; }
+      if (!m.images) m.images = { main: null, detail: null };
+      m.images[slot] = img;
+      if (oldImg && oldImg.id && assetsCap) { assetsCap.delete(oldImg.id).catch(() => {}); }
+      updateViz();
+    };
+
+    window.clearModelImage = function(mid, slot) {
+      const m = state.models.find(x => x.id === mid);
+      if (!m || !m.images) return;
+      const oldImg = m.images[slot];
+      m.images[slot] = null;
+      if (oldImg && oldImg.id && assetsCap) { assetsCap.delete(oldImg.id).catch(() => {}); }
+      updateViz();
+    };
+
+    window.deleteModel = function(mid) {
+      const m = state.models.find(x => x.id === mid);
+      if (!m) return;
+      const linked = state.vehicles.filter(v => v.modelId === mid);
+      const extra = linked.length ? ` ${linked.length} ${linked.length === 1 ? 'item vinculado passará' : 'itens vinculados passarão'} a usar os valores atuais do modelo como valores próprios.` : '';
+      showConfirm(`Excluir o modelo "${m.name}"?${extra}`, () => {
+        linked.forEach(detachVehicleFromModel);
+        state.models = state.models.filter(x => x.id !== mid);
+        modelCardOpen.delete(mid);
+        updateViz();
+      }, 'Excluir');
+    };
+
+    // ---- Vínculo dos itens com os modelos ----
+    window.setVehicleModel = function(vid, mid) {
+      const v = state.vehicles.find(x => x.id === vid);
+      if (!v) return;
+      if (!mid) detachVehicleFromModel(v);
+      else if (state.models.some(m => m.id === mid)) { v.modelId = mid; v.overrides = {}; }
+      updateViz();
+    };
+
+    window.overrideCriterion = function(vid, cid) {
+      const v = state.vehicles.find(x => x.id === vid);
+      const c = state.criteria.find(x => x.id === cid);
+      const m = getModelOf(v);
+      if (!v || !c || !m) return;
+      if (!v.overrides) v.overrides = {};
+      v.overrides[cid] = isFilled(m.values && m.values[cid]) ? Number(m.values[cid]) : (c.min + c.max) / 2;
+      renderVehicleManageList();
+      refreshRanking();
+    };
+
+    window.restoreCriterion = function(vid, cid) {
+      const v = state.vehicles.find(x => x.id === vid);
+      if (!v || !v.overrides) return;
+      delete v.overrides[cid];
+      renderVehicleManageList();
+      refreshRanking();
+    };
+
+    window.updateVehicleOverride = function(vid, cid, val) {
+      const v = state.vehicles.find(x => x.id === vid);
+      if (!v) return;
+      if (!v.overrides) v.overrides = {};
+      v.overrides[cid] = parseFloat(val) || 0;
+      refreshRanking();
+    };
+
     // Interactive Handlers
     // Atualiza só tabela/gráfico (não recria as listas de edição sob o cursor)
     function refreshRanking() {
       renderTable(getRankedVehicles());
+      renderModelsTable(getRankedModels());
+      schedulePersist();
     }
 
     window.updateVehicleValue = function(vid, cid, val) {
@@ -2860,6 +3457,20 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
         c[key] = parseFloat(val) || 0;
         updateViz();
       }
+    };
+
+    window.updateCriterionScope = function(cid, val) {
+      const c = state.criteria.find(item => item.id === cid);
+      if (!c) return;
+      c.scope = val === 'model' ? 'model' : 'item';
+      if (c.scope === 'model') {
+        // modelos que ainda não têm valor para este critério começam no ponto médio
+        state.models.forEach(m => {
+          if (!m.values) m.values = {};
+          if (!isFilled(m.values[cid])) m.values[cid] = (c.min + c.max) / 2;
+        });
+      }
+      updateViz();
     };
 
     window.updateCriterionOrientation = function(cid, checked) {
@@ -3591,17 +4202,17 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
     function blankData() {
       return {
         criteria: [{ id: 'crit_' + Date.now(), name: 'Critério 1', weight: 5, min: 1, max: 10, higherIsBetter: true, note: '' }],
-        vehicles: [], ads: [], notes: []
+        vehicles: [], models: [], ads: [], notes: []
       };
     }
     // Guarda referências (sem clonar) do estado atual dentro da análise ativa
     function syncActive() {
       const a = activeAnalysis();
       if (!a) return;
-      a.data = { criteria: state.criteria, vehicles: state.vehicles, ads: state.ads, notes: state.notes };
+      a.data = { criteria: state.criteria, vehicles: state.vehicles, models: state.models, ads: state.ads, notes: state.notes };
     }
     function applyData(d) {
-      state.criteria = d.criteria; state.vehicles = d.vehicles; state.ads = d.ads; state.notes = d.notes;
+      state.criteria = d.criteria; state.vehicles = d.vehicles; state.models = d.models || []; state.ads = d.ads; state.notes = d.notes;
     }
     function normalizeAnalysis(a) {
       if (!a || typeof a.name !== 'string' || !a.data || typeof a.data !== 'object') {
@@ -3615,6 +4226,15 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
         data: {
           criteria: arr(d.criteria).length ? d.criteria : blankData().criteria,
           vehicles: arr(d.vehicles),
+          models: arr(d.models)
+            .filter(m => m && typeof m.id === 'string' && typeof m.name === 'string')
+            .map(m => ({
+              id: m.id,
+              name: m.name,
+              note: typeof m.note === 'string' ? m.note : '',
+              values: (m.values && typeof m.values === 'object') ? m.values : {},
+              images: { main: (m.images && m.images.main) || null, detail: (m.images && m.images.detail) || null }
+            })),
           ads: arr(d.ads), notes: arr(d.notes)
         }
       };
@@ -3646,7 +4266,7 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
       store.activeId = id;
       applyData(a.data);
       adsFilter = '';
-      vehicleCardOpen.clear();
+      vehicleCardOpen.clear(); modelCardOpen.clear();
       rankSort.key = 'pos'; rankSort.dir = 'asc';
       renderAll();
     }
@@ -3700,7 +4320,7 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
             store.activeId = next.id;
             applyData(next.data);
             adsFilter = '';
-            vehicleCardOpen.clear();
+            vehicleCardOpen.clear(); modelCardOpen.clear();
             rankSort.key = 'pos'; rankSort.dir = 'asc';
             renderAll();
           }, 'Excluir');
@@ -4025,6 +4645,9 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
       renderCriteriaConfig();
       renderVehicleForm();
       renderVehicleManageList();
+      renderModelManageList();
+      renderModelForm();
+      renderModelsTable(getRankedModels());
       schedulePersist();
     }
 
@@ -4059,9 +4682,12 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
           return;
         }
 
+        const modelSel = document.getElementById('inputCarModel');
+        const chosenModel = modelSel && modelSel.value ? state.models.find(m => m.id === modelSel.value) || null : null;
         const newValues = {};
         state.criteria.forEach(c => {
           if (c.formula && c.formula.trim()) return; // valor é sempre calculado, nunca digitado
+          if (chosenModel && criterionScope(c) === 'model') return; // valor herdado do modelo
           const inp = document.getElementById(`inputCar_${c.id}`);
           const val = inp && inp.value !== '' ? parseFloat(inp.value) : (c.min + c.max) / 2;
           newValues[c.id] = val;
@@ -4074,6 +4700,8 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
           name: name,
           note: notesInput ? notesInput.value.trim() : '',
           values: newValues,
+          modelId: chosenModel ? chosenModel.id : null,
+          overrides: {},
           images: { main: newVehiclePendingImage.main, detail: newVehiclePendingImage.detail }
         });
 
@@ -4085,7 +4713,41 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
           if (inp) inp.value = '';
         });
         newVehiclePendingImage = { main: null, detail: null };
+        if (modelSel) modelSel.value = '';
 
+        updateViz();
+      });
+
+      // Add New Model Button
+      document.getElementById('btnSaveModel')?.addEventListener('click', () => {
+        const nameInput = document.getElementById('inputModelName');
+        const name = nameInput ? nameInput.value.trim() : '';
+        if (!name) {
+          showAlert('Por favor, informe o nome do modelo.');
+          return;
+        }
+        const values = {};
+        state.criteria.forEach(c => {
+          if (criterionScope(c) !== 'model' || hasFormula(c)) return;
+          const inp = document.getElementById(`inputModel_${c.id}`);
+          values[c.id] = inp && inp.value !== '' ? parseFloat(inp.value) : (c.min + c.max) / 2;
+        });
+        const notesInput = document.getElementById('inputModelNotes');
+        const newId = 'm_' + Date.now();
+        state.models.push({
+          id: newId,
+          name,
+          note: notesInput ? notesInput.value.trim() : '',
+          values,
+          images: { main: null, detail: null }
+        });
+        modelCardOpen.add(newId);   // abre o novo modelo para já incluir fotos
+        if (nameInput) nameInput.value = '';
+        if (notesInput) notesInput.value = '';
+        state.criteria.forEach(c => {
+          const inp = document.getElementById(`inputModel_${c.id}`);
+          if (inp) inp.value = '';
+        });
         updateViz();
       });
 
@@ -4100,6 +4762,7 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
             min: 1,
             max: 10,
             higherIsBetter: true,
+            scope: 'item',
             note: ''
           });
 
