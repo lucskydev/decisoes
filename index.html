@@ -1437,36 +1437,8 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
     .formula-col-tag.is-agg { width: auto; height: auto; min-width: 0; padding: 1px 7px; border-radius: 999px; font-size: 10px; line-height: 14px; letter-spacing: .02em; }
     .agg-members { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 8px 10px; border: 1px solid var(--stroke-default, #e3e3e3); border-radius: 10px; }
     .agg-member { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; }
-    /* ===== Impressão ===== */
+    /* ===== Relatório PDF ===== */
     .print-btn { margin-left: auto; align-self: flex-start; min-height: 34px; padding: 0 14px; }
-    #printArea { display: none; }
-    @media print {
-      @page { size: A4 landscape; margin: 10mm; }
-      body.is-printing > *:not(#printArea) { display: none !important; }
-      body.is-printing { background: #fff !important; }
-      body.is-printing #printArea { display: block !important; color: #000; background: #fff; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
-      #printArea * { color: #000 !important; text-shadow: none !important; box-shadow: none !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      #printArea .pr-head { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #000; padding-bottom: 4px; margin-bottom: 8px; }
-      #printArea .pr-title { font-size: 18px; font-weight: 700; }
-      #printArea .pr-sub { font-size: 12px; margin-top: 2px; }
-      #printArea .pr-date { font-size: 11px; }
-      #printArea table { width: 100%; border-collapse: collapse; font-size: 11px; }
-      #printArea th, #printArea td { border: 1px solid #999; padding: 3px 5px; text-align: left; vertical-align: middle; background: #fff; }
-      #printArea th { background: #e8e8e8 !important; font-weight: 700; }
-      #printArea tr { break-inside: avoid; }
-      #printArea thead { display: table-header-group; }
-      #printArea td.cell-best { background: #cfe9d4 !important; }
-      #printArea td.cell-worst { background: #f4d0d0 !important; }
-      #printArea tr.is-top td { font-weight: 600; }
-      #printArea .vehicle-thumb { width: 44px; height: 30px; object-fit: cover; border-radius: 3px; display: block; }
-      #printArea .vehicle-thumb-placeholder { width: 44px; height: 30px; display: flex; align-items: center; justify-content: center; border: 1px solid #bbb; border-radius: 3px; background: #fff; }
-      #printArea .score-progress { height: 5px; width: 60px; border: 1px solid #888; border-radius: 3px; margin-bottom: 2px; overflow: hidden; background: #fff; }
-      #printArea .score-fill { height: 100%; background: #555 !important; }
-      #printArea .rank-badge { display: inline-block; min-width: 24px; text-align: center; font-weight: 700; background: transparent !important; border: 1px solid #777; border-radius: 10px; padding: 0 4px; }
-      #printArea .formula-col-tag { border: 1px solid #777; background: #fff !important; border-radius: 8px; padding: 0 4px; font-size: 9px; }
-      #printArea .sort-arrow, #printArea .item-model-tag svg { display: none !important; }
-      #printArea .pr-legend { margin-top: 8px; font-size: 10.5px; line-height: 1.5; }
-    }
     /* ===== Modelos / vínculo ===== */
     .is-hidden { display: none !important; }
     .analysis-switches { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 4px 0; }
@@ -2060,7 +2032,7 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
         <button type="button" class="view-switch-btn" data-cmode="individual" role="tab" aria-selected="true">Critérios individuais</button>
         <button type="button" class="view-switch-btn" data-cmode="aggregate" role="tab" aria-selected="false">Critérios agregados</button>
       </div>
-      <button type="button" class="action-btn-secondary print-btn" id="btnPrintAnalysis" title="Imprimir esta análise como está na tela (itens ou modelos, critérios individuais ou agregados)">🖨 Imprimir</button>
+      <button type="button" class="action-btn-secondary print-btn" id="btnPrintAnalysis" title="Gerar relatório em PDF do que está na tela (itens ou modelos, critérios individuais ou agregados)">📄 Gerar PDF</button>
       </div>
       <div class="table-container" id="itemsTableWrap">
         <table class="ranking-table">
@@ -2705,48 +2677,185 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
       renderModelsTable(getRankedModels());
     }
 
-    // ---- Impressão da análise como aparece na tela ----
-    function printAnalysis() {
-      syncModeSwitch();
-      const isModels = analysisView === 'models';
-      const wrap = document.getElementById(isModels ? 'modelsTableWrap' : 'itemsTableWrap');
-      if (isModels) renderModelsTable(getRankedModels()); else renderTable(getRankedVehicles());
-      const table = wrap && wrap.querySelector('table');
-      if (!table || wrap.classList.contains('is-hidden') || !table.querySelector('tbody tr')) {
-        showAlert(isModels ? 'Não há modelos para imprimir nesta visão.' : 'Não há itens para imprimir.');
-        return;
-      }
-      const clone = table.cloneNode(true);
-      clone.removeAttribute('class');
-      // colunas que não fazem sentido no papel (foto extra e botões de links)
-      const heads = [...clone.querySelectorAll('thead th')];
-      const drop = heads.map((th, i) => /^(Foto extra|Links)$/i.test(th.textContent.replace(/[▲▼↕]/g, '').trim()) ? i : -1).filter(i => i >= 0).reverse();
-      clone.querySelectorAll('tr').forEach(tr => drop.forEach(i => { if (tr.children[i]) tr.children[i].remove(); }));
-      clone.querySelectorAll('[onclick]').forEach(el => el.removeAttribute('onclick'));
-      clone.querySelectorAll('th').forEach(th => th.removeAttribute('title'));
-
-      const mode = effectiveMode();
-      const a = store.analyses.find(x => x.id === store.activeId);
-      const sub = (isModels ? 'Modelos' : 'Itens') + ' — ' + (mode === 'aggregate' ? 'critérios agregados' : 'critérios individuais');
-      const nameOf = id => (state.criteria.find(x => x.id === id) || {}).name;
-      let legend = '';
-      if (mode === 'aggregate') {
-        const aggs = state.criteria.filter(isAggregate);
-        legend = '<div class="pr-legend"><b>Critérios agregados (média das notas dos critérios):</b> ' +
-          aggs.map(c => `${esc(c.name)} = ${esc(aggregateMemberIds(c).map(nameOf).join(', ') || 'nenhum critério')}`).join(' · ') + '</div>';
-      }
-      legend += '<div class="pr-legend">Notas de 2 a 10. “P” = peso do critério. Verde = melhor nota da coluna; vermelho = pior.</div>';
-      const d = new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-      document.getElementById('printArea').innerHTML =
-        `<div class="pr-head"><div><div class="pr-title">${esc(a ? a.name : 'Análise')}</div><div class="pr-sub">${esc(sub)}</div></div><div class="pr-date">${esc(d)}</div></div>` +
-        clone.outerHTML + legend;
-      document.body.classList.add('is-printing');
-      const done = () => { document.body.classList.remove('is-printing'); document.getElementById('printArea').innerHTML = ''; window.removeEventListener('afterprint', done); };
-      window.addEventListener('afterprint', done);
-      // aguarda as imagens do clone carregarem (cache) antes de abrir o diálogo
-      setTimeout(() => window.print(), 80);
+    // ---- Relatório em PDF (retrato) com o que está na tela ----
+    function loadScriptOnce(src) {
+      return new Promise((resolve, reject) => {
+        const el = document.createElement('script');
+        el.src = src; el.onload = resolve; el.onerror = () => reject(new Error('Falha ao carregar ' + src));
+        document.head.appendChild(el);
+      });
     }
-    document.getElementById('btnPrintAnalysis')?.addEventListener('click', printAnalysis);
+    async function ensurePdfLib() {
+      if (!(window.jspdf && window.jspdf.jsPDF)) {
+        await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+      }
+      if (!(window.jspdf && window.jspdf.jsPDF.API.autoTable)) {
+        await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js');
+      }
+    }
+
+    async function generateAnalysisPdf() {
+      const btn = document.getElementById('btnPrintAnalysis');
+      const isModels = analysisView === 'models';
+      const ranked = isModels ? getRankedModels() : getRankedVehicles();
+      if (!ranked.length) { showAlert(isModels ? 'Não há modelos para gerar o relatório.' : 'Não há itens para gerar o relatório.'); return; }
+      const mode = effectiveMode();
+      let cols = visibleCriteria();
+      if (isModels) cols = cols.filter(c => (hasFormula(c) || isAggregate(c)) ? ranked.some(r => r.criteriaValues[c.id] != null) : criterionScope(c) === 'model');
+      if (!cols.length) { showAlert('Não há critérios para mostrar nesta visão.'); return; }
+
+      const oldLabel = btn ? btn.textContent : '';
+      if (btn) { btn.disabled = true; btn.textContent = 'Gerando PDF…'; }
+      try {
+        await ensurePdfLib();
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const W = doc.internal.pageSize.getWidth(), H = doc.internal.pageSize.getHeight();
+        const M = 12, usable = W - 2 * M;
+        const fmt = n => Number(n).toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+        const fmt1 = n => Number(n).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+        const fmt2 = n => Number(n).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const analysis = store.analyses.find(x => x.id === store.activeId);
+        const aname = analysis ? analysis.name : 'Análise';
+        const kind = (isModels ? 'Modelos' : 'Itens') + ' - ' + (mode === 'aggregate' ? 'critérios agregados' : 'critérios individuais');
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        const nameOf = id => (state.criteria.find(x => x.id === id) || {}).name;
+        const DARK = [38, 38, 42], GOLD = [176, 138, 62], LIGHT = [244, 242, 238];
+
+        // cabeçalho
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(18); doc.setTextColor(...DARK);
+        doc.text(aname, M, M + 6);
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(11); doc.setTextColor(90);
+        doc.text(kind, M, M + 12);
+        doc.setFontSize(9); doc.text(dateStr, W - M, M + 6, { align: 'right' });
+        doc.setDrawColor(...GOLD); doc.setLineWidth(0.6); doc.line(M, M + 15, W - M, M + 15);
+        let y = M + 22;
+
+        const section = (title) => {
+          if (y > H - 40) { doc.addPage(); y = M + 4; }
+          doc.setFont('helvetica', 'bold'); doc.setFontSize(12); doc.setTextColor(...DARK);
+          doc.text(title, M, y); y += 3;
+        };
+        const tableOpts = {
+          margin: { left: M, right: M, top: M + 4, bottom: 16 },
+          styles: { font: 'helvetica', fontSize: 9, cellPadding: 2, lineColor: [200, 200, 200], lineWidth: 0.2, textColor: DARK, valign: 'middle' },
+          headStyles: { fillColor: DARK, textColor: 255, fontStyle: 'bold' },
+          alternateRowStyles: { fillColor: [250, 249, 247] },
+        };
+
+        // 1) classificação
+        section('Classificação');
+        const head1 = isModels ? ['Pos.', 'Modelo', 'Itens', 'Nota final'] : ['Pos.', 'Item', 'Modelo', 'Nota final'];
+        const body1 = ranked.map((r, i) => {
+          const m = isModels ? null : getModelOf(r);
+          return isModels
+            ? [i + 1, r.name, r.itemCount || 0, fmt2(r.finalScore)]
+            : [i + 1, r.name, m ? m.name : '-', fmt2(r.finalScore)];
+        });
+        doc.autoTable({
+          ...tableOpts, startY: y, head: [head1], body: body1,
+          columnStyles: { 0: { cellWidth: 14, halign: 'center' }, 3: { cellWidth: 28, halign: 'right', fontStyle: 'bold' } },
+          didParseCell: d => { if (d.section === 'body' && d.row.index === 0) d.cell.styles.fillColor = [236, 224, 196]; },
+          // barra proporcional à nota na coluna "Nota final"
+          didDrawCell: d => {
+            if (d.section === 'body' && d.column.index === 3) {
+              const sc = ranked[d.row.index].finalScore;
+              const bw = d.cell.width - 4;
+              doc.setFillColor(225, 225, 225); doc.rect(d.cell.x + 2, d.cell.y + d.cell.height - 2.6, bw, 1.2, 'F');
+              doc.setFillColor(...GOLD); doc.rect(d.cell.x + 2, d.cell.y + d.cell.height - 2.6, bw * Math.max(0, Math.min(1, sc / 10)), 1.2, 'F');
+            }
+          }
+        });
+        y = doc.lastAutoTable.finalY + 8;
+
+        // 2) comparativo por critério: critérios nas linhas, itens/modelos nas colunas (em ordem de classificação)
+        const per = 5;   // colunas por tabela
+        const label0 = isModels ? 'Modelos' : 'Itens';
+        const range = {};
+        cols.forEach(c => {
+          const sc = ranked.map(r => r.criteriaScores[c.id]).filter(x => typeof x === 'number');
+          range[c.id] = sc.length ? { max: Math.max(...sc), min: Math.min(...sc) } : null;
+        });
+        for (let start = 0; start < ranked.length; start += per) {
+          const chunk = ranked.slice(start, start + per);
+          section(`Comparativo por critério${ranked.length > per ? ` (${label0.toLowerCase()} ${start + 1} a ${start + chunk.length})` : ''}`);
+          const head = [['Critério (peso)', ...chunk.map((r, i) => `${start + i + 1}. ${r.name}`)]];
+          const body = [];
+          body.push(['Nota final', ...chunk.map(r => fmt2(r.finalScore))]);
+          const finals = ranked.map(r => r.finalScore);
+          cols.forEach(c => {
+            body.push([
+              `${c.name} (P:${c.weight})${isAggregate(c) ? ' - média' : ''}`,
+              ...chunk.map(r => {
+                const v = r.criteriaValues[c.id], sc = r.criteriaScores[c.id];
+                if (v == null) return '-';
+                if (isAggregate(c)) return fmt2(v);
+                return `${fmt(v)}\n(nota ${fmt1(sc)})`;
+              })
+            ]);
+          });
+          const firstW = 44, colW = (usable - firstW) / chunk.length;
+          const colStyles = { 0: { cellWidth: firstW, fontStyle: 'bold' } };
+          chunk.forEach((_, i) => { colStyles[i + 1] = { cellWidth: colW, halign: 'center' }; });
+          doc.autoTable({
+            ...tableOpts, startY: y, head, body, columnStyles: colStyles,
+            headStyles: { ...tableOpts.headStyles, halign: 'center', fontSize: 8.5 },
+            didParseCell: d => {
+              if (d.section !== 'body' || d.column.index === 0) return;
+              const r = chunk[d.column.index - 1];
+              if (d.row.index === 0) {
+                d.cell.styles.fontStyle = 'bold';
+                const mx = Math.max(...finals), mn = Math.min(...finals);
+                if (mx !== mn) { if (r.finalScore === mx) d.cell.styles.fillColor = [207, 233, 212]; else if (r.finalScore === mn) d.cell.styles.fillColor = [244, 208, 208]; }
+                return;
+              }
+              const c = cols[d.row.index - 1], rg = range[c.id], sc = r.criteriaScores[c.id];
+              if (rg && rg.max !== rg.min && typeof sc === 'number') {
+                if (sc === rg.max) d.cell.styles.fillColor = [207, 233, 212];
+                else if (sc === rg.min) d.cell.styles.fillColor = [244, 208, 208];
+              }
+            }
+          });
+          y = doc.lastAutoTable.finalY + 8;
+        }
+
+        // 3) composição dos agregados
+        const aggs = mode === 'aggregate' ? state.criteria.filter(isAggregate) : [];
+        if (aggs.length) {
+          section('Composição dos critérios agregados');
+          doc.autoTable({
+            ...tableOpts, startY: y, head: [['Critério agregado', 'Média das notas de']],
+            body: aggs.map(c => [`${c.name} (P:${c.weight})`, aggregateMemberIds(c).map(nameOf).join(', ') || 'nenhum critério']),
+            columnStyles: { 0: { cellWidth: 56, fontStyle: 'bold' } }
+          });
+          y = doc.lastAutoTable.finalY + 6;
+        }
+
+        // legenda
+        if (y > H - 28) { doc.addPage(); y = M + 4; }
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(100);
+        const note = 'Notas de 2 a 10. P = peso do critério. Verde = melhor nota da linha; vermelho = pior nota.' +
+          (mode === 'aggregate' ? ' Na visão agregada, a nota final usa os critérios agregados e os que não pertencem a nenhum agregado.' : '');
+        doc.text(doc.splitTextToSize(note, usable), M, y);
+
+        // rodapé com paginação
+        const pages = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pages; i++) {
+          doc.setPage(i); doc.setFontSize(8); doc.setTextColor(130);
+          doc.text(aname + ' - ' + kind, M, H - 8);
+          doc.text(`Página ${i} de ${pages}`, W - M, H - 8, { align: 'right' });
+        }
+        const slug = t => String(t).normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-+|-+$/g, '').toLowerCase();
+        doc.save(`relatorio-${slug(aname)}-${isModels ? 'modelos' : 'itens'}-${mode === 'aggregate' ? 'agregados' : 'individuais'}.pdf`);
+      } catch (err) {
+        console.error(err);
+        showAlert('Não foi possível gerar o PDF: ' + (err && err.message ? err.message : err) + '. Verifique a conexão com a internet e tente de novo.');
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = oldLabel; }
+      }
+    }
+    document.getElementById('btnPrintAnalysis')?.addEventListener('click', generateAnalysisPdf);
 
     function setAnalysisView(view) {
       analysisView = view === 'models' ? 'models' : 'items';
@@ -5295,6 +5404,5 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
   </script>
 
 <script>/*luminous-slider-normalizer*/(function(){function f(r){if(!r||r.type!=='range')return;var mn=parseFloat(r.min||'0'),mx=parseFloat(r.max||'100'),v=parseFloat(r.value);if(isNaN(v))v=(mn+mx)/2;var p=mx>mn?((v-mn)/(mx-mn))*100:50;r.style.setProperty('--progress',p+'%');r.style.removeProperty('--slider-fill');}function all(){document.querySelectorAll('input[type="range"], .lumi-slider').forEach(f);}document.addEventListener('input',function(e){f(e.target);});if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',all);else all();})();</script>
-  <div id="printArea" aria-hidden="true"></div>
 </body>
 </html>
