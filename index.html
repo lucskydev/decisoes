@@ -1433,8 +1433,13 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
     #criteriaGrid .criterion-card.is-open .criterion-card-body { display: grid; }
     #criteriaGrid .crit-field-full { grid-column: 1 / -1; }
 
+    /* ===== Critérios agregados ===== */
+    .formula-col-tag.is-agg { width: auto; height: auto; min-width: 0; padding: 1px 7px; border-radius: 999px; font-size: 10px; line-height: 14px; letter-spacing: .02em; }
+    .agg-members { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 8px 10px; border: 1px solid var(--stroke-default, #e3e3e3); border-radius: 10px; }
+    .agg-member { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; }
     /* ===== Modelos / vínculo ===== */
     .is-hidden { display: none !important; }
+    .analysis-switches { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 4px 0; }
     .view-switch { display: inline-flex; align-self: flex-start; width: max-content; gap: 2px; padding: 3px; margin-bottom: 8px; background: var(--surface-dim, #f2f0f0);
       border: 1px solid var(--stroke-default, #e3e3e3); border-radius: 999px; }
     .view-switch .view-switch-btn { min-height: 28px; padding: 0 16px; font-size: 13px; font-weight: 600; background: transparent; border: none;
@@ -2017,10 +2022,14 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
 
     <!-- Tab 1: Análises -->
     <div class="tab-content is-active" id="tab-ranking">
-      <div class="view-switch" role="tablist" aria-label="O que comparar">
+      <div class="analysis-switches"><div class="view-switch" role="tablist" aria-label="O que comparar">
         <button type="button" class="view-switch-btn is-active" data-view="items" role="tab" aria-selected="true">Itens</button>
         <button type="button" class="view-switch-btn" data-view="models" role="tab" aria-selected="false">Modelos</button>
       </div>
+      <div class="view-switch is-hidden" id="criteriaModeSwitch" role="tablist" aria-label="Como mostrar os critérios" style="margin-left:12px;">
+        <button type="button" class="view-switch-btn" data-cmode="individual" role="tab" aria-selected="true">Critérios individuais</button>
+        <button type="button" class="view-switch-btn" data-cmode="aggregate" role="tab" aria-selected="false">Critérios agregados</button>
+      </div></div>
       <div class="table-container" id="itemsTableWrap">
         <table class="ranking-table">
           <thead>
@@ -2342,6 +2351,46 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
     const criterionScope = c => (c && c.scope === 'model') ? 'model' : 'item';
     const hasFormula = c => !!(c && c.formula && c.formula.trim());
 
+    // ---- Critérios agregados: a nota é a média das notas de outros critérios (members) ----
+    const isAggregate = c => !!(c && Array.isArray(c.members));
+    let criteriaMode = 'individual';   // 'individual' | 'aggregate' (como mostrar a análise)
+    const aggregateMemberIds = c => (c.members || []).filter(id => state.criteria.some(x => x.id === id && !isAggregate(x)));
+    function groupedCriterionIds() {
+      const set = new Set();
+      state.criteria.filter(isAggregate).forEach(a => aggregateMemberIds(a).forEach(id => set.add(id)));
+      return set;
+    }
+    const hasAggregates = () => state.criteria.some(isAggregate);
+    const effectiveMode = () => (hasAggregates() && criteriaMode === 'aggregate') ? 'aggregate' : 'individual';
+    // Critérios que aparecem (e contam na nota final) em cada modo
+    function visibleCriteria() {
+      if (effectiveMode() === 'individual') return state.criteria.filter(c => !isAggregate(c));
+      const grouped = groupedCriterionIds();
+      return state.criteria.filter(c => isAggregate(c) || !grouped.has(c.id));
+    }
+    // Notas, valores e nota final a partir dos valores efetivos de cada critério
+    function summarizeCriteria(valueMap) {
+      const criteriaScores = {}, criteriaValues = {};
+      const isNum = x => typeof x === 'number' && Number.isFinite(x);
+      state.criteria.forEach(c => {
+        if (isAggregate(c)) return;
+        const raw = valueMap[c.id];
+        criteriaValues[c.id] = isNum(raw) ? raw : null;
+        criteriaScores[c.id] = isNum(raw) ? calculateCriterionScore(raw, c) : null;
+      });
+      state.criteria.forEach(c => {
+        if (!isAggregate(c)) return;
+        const ms = aggregateMemberIds(c).map(id => criteriaScores[id]).filter(isNum);
+        const avg = ms.length ? ms.reduce((a, b) => a + b, 0) / ms.length : null;
+        criteriaValues[c.id] = avg; criteriaScores[c.id] = avg;
+      });
+      let tw = 0, tws = 0;
+      visibleCriteria().forEach(c => {
+        if (isNum(criteriaScores[c.id])) { tws += criteriaScores[c.id] * c.weight; tw += c.weight; }
+      });
+      return { criteriaScores, criteriaValues, finalScore: tw > 0 ? tws / tw : 0 };
+    }
+
     function getModelOf(v) {
       return v && v.modelId ? (state.models.find(m => m.id === v.modelId) || null) : null;
     }
@@ -2396,6 +2445,7 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
       order.forEach(id => {
         const c = state.criteria.find(x => x.id === id);
         if (!c) return;
+        if (isAggregate(c)) { valueMap[id] = NaN; return; }
         if (cyclic.has(id)) { errors[id] = 'Referência circular entre critérios'; valueMap[id] = NaN; return; }
         if (hasFormula(c)) {
           try {
@@ -2436,27 +2486,8 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
       const { order, cyclic } = getCriteriaEvalOrder();
       return state.vehicles.map(v => {
         const { valueMap, errors } = computeVehicleValues(v, order, cyclic);
-        const criteriaScores = {};
-        const criteriaValues = {};
-        let totalWeightedScore = 0;
-        let totalWeight = 0;
-
-        state.criteria.forEach(c => {
-          const raw = valueMap[c.id];
-          const valid = typeof raw === 'number' && Number.isFinite(raw);
-          criteriaValues[c.id] = valid ? raw : null;
-          if (valid) {
-            const score = calculateCriterionScore(raw, c);
-            criteriaScores[c.id] = score;
-            totalWeightedScore += score * c.weight;
-            totalWeight += c.weight;
-          } else {
-            criteriaScores[c.id] = null;
-          }
-        });
-
-        const finalScore = totalWeight > 0 ? totalWeightedScore / totalWeight : 0;
-        return {
+        const { criteriaScores, criteriaValues, finalScore } = summarizeCriteria(valueMap);
+                return {
           ...v,
           finalScore: parseFloat(finalScore.toFixed(2)),
           criteriaScores,
@@ -2471,25 +2502,8 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
       const { order, cyclic } = getCriteriaEvalOrder();
       return state.models.map(m => {
         const { valueMap, errors } = computeVehicleValues(m, order, cyclic, true);
-        const criteriaScores = {};
-        const criteriaValues = {};
-        let totalWeightedScore = 0;
-        let totalWeight = 0;
-        state.criteria.forEach(c => {
-          const raw = valueMap[c.id];
-          const valid = typeof raw === 'number' && Number.isFinite(raw);
-          criteriaValues[c.id] = valid ? raw : null;
-          if (valid) {
-            const score = calculateCriterionScore(raw, c);
-            criteriaScores[c.id] = score;
-            totalWeightedScore += score * c.weight;
-            totalWeight += c.weight;
-          } else {
-            criteriaScores[c.id] = null;
-          }
-        });
-        const finalScore = totalWeight > 0 ? totalWeightedScore / totalWeight : 0;
-        return {
+        const { criteriaScores, criteriaValues, finalScore } = summarizeCriteria(valueMap);
+                return {
           ...m,
           finalScore: parseFloat(finalScore.toFixed(2)),
           criteriaScores,
@@ -2505,6 +2519,7 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
     const rankSort = { key: 'pos', dir: 'asc' };
 
     function renderTable(ranked) {
+      syncModeSwitch();
       const headerTr = document.getElementById('tableHeader');
       const tableBody = document.getElementById('tableBody');
       if (!headerTr || !tableBody) return;
@@ -2521,8 +2536,8 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
         ${sortTh('name', 'Item')}
         ${sortTh('final', 'Nota Final')}
       `;
-      state.criteria.forEach(c => {
-        const formulaTag = c.formula && c.formula.trim() ? ` <span class="formula-col-tag" title="Calculado: ${esc(c.formula)}">ƒ</span>` : '';
+      visibleCriteria().forEach(c => {
+        const formulaTag = aggTag(c);
         headerHTML += sortTh('c:' + c.id, `${esc(c.name)} <span style="font-size: 12px; font-weight: normal; opacity: 0.7;">(P:${c.weight})</span>${formulaTag}${noteIcon(c.note)}`);
       });
       headerHTML += `<th>Foto extra</th><th>Links</th>`;
@@ -2539,7 +2554,7 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
       const finalVaries = finalMax !== finalMin;
 
       const criterionRange = {};
-      state.criteria.forEach(c => {
+      visibleCriteria().forEach(c => {
         const scores = ranked
           .map(v => v.criteriaScores[c.id])
           .filter(sc => typeof sc === 'number' && !isNaN(sc));
@@ -2593,7 +2608,7 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
             <strong style="font-family: var(--ff-mono, monospace);">${v.finalScore.toFixed(2)}</strong>
           </td>`;
 
-        state.criteria.forEach(c => {
+        visibleCriteria().forEach(c => {
           const errMsg = v.criteriaErrors && v.criteriaErrors[c.id];
           if (errMsg) {
             bodyHTML += `
@@ -2608,11 +2623,11 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
           const score = typeof scoreNum === 'number' ? scoreNum.toFixed(1) : '-';
           const range = criterionRange[c.id];
           const cls = range ? cellClass(scoreNum, range.max, range.min) : '';
-          const ovr = !hasFormula(c) && inputFor(v, c).source === 'override';
+          const ovr = !isAggregate(c) && !hasFormula(c) && inputFor(v, c).source === 'override';
           bodyHTML += `
             <td class="${cls}${ovr ? ' cell-override' : ''}"${ovr ? ' title="Valor sobrescrito neste item"' : ''}>
               <span style="font-family: var(--ff-mono, monospace);">${val}</span>
-              <span style="font-size: 12px; color: var(--on-surface-variant, rgba(0,0,0,0.55)); margin-left: 4px;">(${score}pt)</span>
+              ${isAggregate(c) ? '' : `<span style="font-size: 12px; color: var(--on-surface-variant, rgba(0,0,0,0.55)); margin-left: 4px;">(${score}pt)</span>`}
             </td>`;
         });
 
@@ -2629,9 +2644,38 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
     let analysisView = 'items';
     const modelSort = { key: 'pos', dir: 'asc' };
 
+    // Marca no cabeçalho: ƒ para fórmula, "média" para critério agregado
+    function aggTag(c) {
+      if (isAggregate(c)) {
+        const names = aggregateMemberIds(c).map(id => (state.criteria.find(x => x.id === id) || {}).name).join(', ');
+        return ` <span class="formula-col-tag is-agg" title="Média de: ${esc(names || 'nenhum critério')}">média</span>`;
+      }
+      return hasFormula(c) ? ` <span class="formula-col-tag" title="Calculado: ${esc(c.formula)}">ƒ</span>` : '';
+    }
+
+    // O seletor agregados/individuais só aparece quando existe algum critério agregado
+    function syncModeSwitch() {
+      const box = document.getElementById('criteriaModeSwitch');
+      if (!box) return;
+      box.classList.toggle('is-hidden', !hasAggregates());
+      const mode = effectiveMode();
+      box.querySelectorAll('[data-cmode]').forEach(b => {
+        const on = b.dataset.cmode === mode;
+        b.classList.toggle('is-active', on);
+        b.setAttribute('aria-selected', String(on));
+      });
+    }
+
+    function setCriteriaMode(mode) {
+      criteriaMode = mode === 'aggregate' ? 'aggregate' : 'individual';
+      syncModeSwitch();
+      renderTable(getRankedVehicles());
+      renderModelsTable(getRankedModels());
+    }
+
     function setAnalysisView(view) {
       analysisView = view === 'models' ? 'models' : 'items';
-      document.querySelectorAll('.view-switch-btn').forEach(b => {
+      document.querySelectorAll('.view-switch-btn[data-view]').forEach(b => {
         const on = b.dataset.view === analysisView;
         b.classList.toggle('is-active', on);
         b.setAttribute('aria-selected', String(on));
@@ -2649,7 +2693,8 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
       if (!headerTr || !body || !wrap || !empty) return;
 
       // colunas: critérios "do modelo" e fórmulas que conseguem ser calculadas só com eles
-      const cols = state.criteria.filter(c => hasFormula(c)
+      syncModeSwitch();
+      const cols = visibleCriteria().filter(c => (hasFormula(c) || isAggregate(c))
         ? ranked.some(r => r.criteriaValues[c.id] !== null && r.criteriaValues[c.id] !== undefined)
         : criterionScope(c) === 'model');
 
@@ -2672,7 +2717,7 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
       };
       let headerHTML = `${sortTh('pos', 'Pos.')}<th>Foto</th>${sortTh('name', 'Modelo')}${sortTh('final', 'Nota Final')}`;
       cols.forEach(c => {
-        const formulaTag = hasFormula(c) ? ` <span class="formula-col-tag" title="Calculado: ${esc(c.formula)}">ƒ</span>` : '';
+        const formulaTag = aggTag(c);
         headerHTML += sortTh('c:' + c.id, `${esc(c.name)} <span style="font-size: 12px; font-weight: normal; opacity: 0.7;">(P:${c.weight})</span>${formulaTag}${noteIcon(c.note)}`);
       });
       headerHTML += `<th>Foto extra</th>${sortTh('items', 'Itens')}`;
@@ -2732,7 +2777,7 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
           const r = range[c.id];
           html += `<td class="${r ? cellClass(sc, r.max, r.min).trim() : ''}">
             <span style="font-family: var(--ff-mono, monospace);">${val}</span>
-            <span style="font-size: 12px; color: var(--on-surface-variant, rgba(0,0,0,0.55)); margin-left: 4px;">(${typeof sc === 'number' ? sc.toFixed(1) : '-'}pt)</span>
+            ${isAggregate(c) ? '' : `<span style="font-size: 12px; color: var(--on-surface-variant, rgba(0,0,0,0.55)); margin-left: 4px;">(${typeof sc === 'number' ? sc.toFixed(1) : '-'}pt)</span>`}
           </td>`;
         });
         html += `
@@ -2755,8 +2800,10 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
         const t = e.target.closest ? e.target : null;
         if (!t) return;
         apply(t.closest('#modelsHeader th.sortable'));
-        const b = t.closest('.view-switch-btn');
+        const b = t.closest('.view-switch-btn[data-view]');
         if (b) setAnalysisView(b.dataset.view);
+        const cm = t.closest('.view-switch-btn[data-cmode]');
+        if (cm) setCriteriaMode(cm.dataset.cmode);
       });
       document.addEventListener('keydown', e => {
         if (e.key !== 'Enter' && e.key !== ' ') return;
@@ -2810,17 +2857,20 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
       if (!grid) return;
 
       const total = state.criteria.length;
-      const sumW = state.criteria.reduce((s, c) => s + (Number(c.weight) || 0), 0) || 1;
+      const indiv = state.criteria.filter(c => !isAggregate(c));
+      const sumW = indiv.reduce((s, c) => s + (Number(c.weight) || 0), 0) || 1;
+      const sumAgg = state.criteria.filter(c => isAggregate(c) || !groupedCriterionIds().has(c.id)).reduce((s, c) => s + (Number(c.weight) || 0), 0) || 1;
       const sumEl = document.getElementById('weightSummary');
       if (sumEl) {
         const col = i => `var(--chart-${(i % 10) + 1})`;
-        const segs = state.criteria.map((c, i) => `<span class="ws-seg" style="width:${c.weight / sumW * 100}%;background:${col(i)}" title="${esc(c.name)}: ${(c.weight / sumW * 100).toFixed(1)}%"></span>`).join('');
-        const legend = state.criteria.map((c, i) => `<span class="ws-item"><i style="background:${col(i)}"></i>${esc(c.name)} <b>${Math.round(c.weight / sumW * 100)}%</b></span>`).join('');
-        sumEl.innerHTML = `<div class="ws-head"><div><div class="ws-title">Distribuição dos pesos</div><div class="ws-sub">${total} critérios · soma dos pesos: ${sumW}</div></div><button type="button" class="action-btn-secondary" onclick="equalizeWeights()">Igualar pesos</button></div><div class="ws-bar">${segs}</div><div class="ws-legend">${legend}</div>`;
+        const segs = indiv.map((c, i) => `<span class="ws-seg" style="width:${c.weight / sumW * 100}%;background:${col(i)}" title="${esc(c.name)}: ${(c.weight / sumW * 100).toFixed(1)}%"></span>`).join('');
+        const legend = indiv.map((c, i) => `<span class="ws-item"><i style="background:${col(i)}"></i>${esc(c.name)} <b>${Math.round(c.weight / sumW * 100)}%</b></span>`).join('');
+        sumEl.innerHTML = `<div class="ws-head"><div><div class="ws-title">Distribuição dos pesos</div><div class="ws-sub">${indiv.length} critérios individuais · soma dos pesos: ${sumW}</div></div><button type="button" class="action-btn-secondary" onclick="equalizeWeights()">Igualar pesos</button></div><div class="ws-bar">${segs}</div><div class="ws-legend">${legend}</div>`;
       }
       let html = '';
       state.criteria.forEach((c, idx) => {
-        const share = Math.round(c.weight / sumW * 100);
+        const agg = isAggregate(c);
+        const share = Math.round(c.weight / (agg ? sumAgg : sumW) * 100);
         const open = criterionCardOpen.has(c.id);
         html += `
           <div class="criterion-card${open ? ' is-open' : ''}" draggable="${!open}"
@@ -2836,7 +2886,7 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
                 title="Posição do critério" aria-label="Posição do critério"
                 onchange="moveCriterionToPosition('${c.id}', this.value)">
               <button type="button" class="criterion-card-toggle" aria-label="Expandir ou recolher o critério" aria-expanded="${open}" onclick="toggleCriterionCard('${c.id}')">▸</button>
-              <button type="button" class="criterion-titlebtn" aria-expanded="${open}" title="Clique para expandir ou recolher" onclick="toggleCriterionCard('${c.id}')"><span class="criterion-title-text">${esc(c.name)}</span>${hasFormula(c) ? '<span class="formula-col-tag" title="Calculado: ' + esc(c.formula) + '">ƒ</span>' : (criterionScope(c) === 'model' ? '<span class="src-tag" title="Valor vem do modelo">modelo</span>' : '')}</button>
+              <button type="button" class="criterion-titlebtn" aria-expanded="${open}" title="Clique para expandir ou recolher" onclick="toggleCriterionCard('${c.id}')"><span class="criterion-title-text">${esc(c.name)}</span>${agg ? '<span class="formula-col-tag is-agg" title="Média de outros critérios">média</span>' : hasFormula(c) ? '<span class="formula-col-tag" title="Calculado: ' + esc(c.formula) + '">ƒ</span>' : (criterionScope(c) === 'model' ? '<span class="src-tag" title="Valor vem do modelo">modelo</span>' : '')}</button>
               <button class="action-btn-danger" onclick="deleteCriterion('${c.id}')">Remover</button>
             </div>
 
@@ -2847,13 +2897,31 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
                 aria-label="Nome do critério" onchange="updateCriterionName('${c.id}', this.value)">
             </div>
 
+            <div class="crit-field-full">
+              <label class="lumi-body-s" style="font-size: 12px;" for="kind_${c.id}">Tipo do critério</label>
+              <select class="ad-select" id="kind_${c.id}" onchange="updateCriterionKind('${c.id}', this.value)">
+                <option value="value"${agg ? '' : ' selected'}>Valor (digitado ou calculado por fórmula)</option>
+                <option value="aggregate"${agg ? ' selected' : ''}>Agregado (média das notas de outros critérios)</option>
+              </select>
+            </div>
+
+            ${agg ? `
+            <div class="crit-field-full">
+              <label class="lumi-body-s" style="font-size: 12px;">Critérios que entram na média</label>
+              <div class="agg-members">
+                ${state.criteria.filter(x => x.id !== c.id && !isAggregate(x)).map(x => `
+                <label class="agg-member"><input type="checkbox" ${(c.members || []).includes(x.id) ? 'checked' : ''} onchange="toggleAggregateMember('${c.id}', '${x.id}', this.checked)"> ${esc(x.name)}</label>`).join('') || '<span class="vehicle-empty">Crie outros critérios para incluí-los aqui.</span>'}
+              </div>
+              <div class="formula-hint">Média simples das notas (2 a 10) dos critérios marcados. Não há valor para digitar.</div>
+            </div>` : ''}
+
             <div class="weight-block">
-              <div class="weight-top"><span class="weight-label">Peso</span><span class="weight-share">${share}% do total</span><span class="weight-value">${c.weight}</span></div>
+              <div class="weight-top"><span class="weight-label">Peso</span><span class="weight-share">${share}% ${agg ? 'no modo agregado' : 'do total'}</span><span class="weight-value">${c.weight}</span></div>
               <input type="range" class="weight-slider" min="1" max="10" value="${c.weight}" style="--progress: ${(c.weight - 1) / 9 * 100}%;" aria-label="Peso do critério" oninput="updateCriterionWeight('${c.id}', this.value)">
               <div class="weight-scale"><span>1</span><span>5</span><span>10</span></div>
             </div>
 
-            <div class="bounds-row">
+            ${agg ? '' : `<div class="bounds-row">
               <label class="bound-field"><span>Mínimo</span><input type="number" class="lumi-input" value="${c.min}" onchange="updateCriterionBounds('${c.id}', 'min', this.value)"></label>
               <label class="bound-field"><span>Máximo</span><input type="number" class="lumi-input" value="${c.max}" onchange="updateCriterionBounds('${c.id}', 'max', this.value)"></label>
             </div>
@@ -2880,6 +2948,8 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
                 onchange="updateCriterionFormula('${c.id}', this.value)">
               <div class="formula-hint${formulaHintText(c).isError ? ' is-error' : ''}" id="formulaHint_${c.id}">${esc(formulaHintText(c).text)}</div>
             </div>
+
+            `}
 
             <div style="margin-top: 4px;">
               <label class="lumi-body-s" style="font-size: 12px;">Observações</label>
@@ -3037,6 +3107,7 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
       }
 
       state.criteria.forEach(c => {
+        if (isAggregate(c)) return;
         const isFormula = hasFormula(c);
         const inherited = !!model && !isFormula && criterionScope(c) === 'model';
         const mv = inherited && model.values && isFilled(model.values[c.id]) ? model.values[c.id] : '';
@@ -3125,6 +3196,7 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
             </div>` : ''}
             <div class="form-grid">`;
         state.criteria.forEach(c => {
+          if (isAggregate(c)) return;
           const isFormula = hasFormula(c);
           const labelHtml = `${esc(c.name)}${isFormula ? ' <span class="formula-col-tag" title="Calculado: ' + esc(c.formula) + '">ƒ</span>' : ''}${noteIcon(c.note)}`;
           if (isFormula) {
@@ -3252,6 +3324,7 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
         const thumb = m.images && m.images.main && m.images.main.url;
         let fields = '';
         state.criteria.forEach(c => {
+          if (isAggregate(c)) return;
           const labelHtml = `${esc(c.name)}${hasFormula(c) ? ' <span class="formula-col-tag" title="Calculado: ' + esc(c.formula) + '">ƒ</span>' : ''}${noteIcon(c.note)}`;
           if (hasFormula(c)) {
             const v = valueMap[c.id];
@@ -3524,6 +3597,35 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
       updateViz();
     };
 
+    window.updateCriterionKind = function(cid, kind) {
+      const c = state.criteria.find(item => item.id === cid);
+      if (!c) return;
+      if (kind === 'aggregate') {
+        if (isAggregate(c)) return;
+        c.members = [];
+        c.formula = '';
+        c.scope = 'item';
+        // um critério agregado não pode ser membro de outro
+        state.criteria.forEach(o => { if (isAggregate(o) && o.id !== cid) o.members = o.members.filter(id => id !== cid); });
+        // fórmulas que usavam este critério deixam de funcionar (agregados não têm valor)
+      } else {
+        delete c.members;
+        if (!state.vehicles.every(v => v.values && isFilled(v.values[cid]))) {
+          state.vehicles.forEach(v => { if (!v.values) v.values = {}; if (!isFilled(v.values[cid])) v.values[cid] = (c.min + c.max) / 2; });
+        }
+      }
+      updateViz();
+    };
+
+    window.toggleAggregateMember = function(aid, mid, checked) {
+      const a = state.criteria.find(item => item.id === aid);
+      if (!a || !isAggregate(a)) return;
+      const set = new Set(a.members || []);
+      if (checked) set.add(mid); else set.delete(mid);
+      a.members = [...set];
+      updateViz();
+    };
+
     window.updateCriterionOrientation = function(cid, checked) {
       const c = state.criteria.find(item => item.id === cid);
       if (c) {
@@ -3549,6 +3651,7 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
 
       showConfirm(`Excluir o critério "${c.name}"?${warning}`, () => {
         state.criteria = state.criteria.filter(x => x.id !== cid);
+        state.criteria.forEach(o => { if (isAggregate(o)) o.members = o.members.filter(id => id !== cid); });
         updateViz();
       }, 'Excluir');
     };
@@ -4737,7 +4840,7 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
         const chosenModel = modelSel && modelSel.value ? state.models.find(m => m.id === modelSel.value) || null : null;
         const newValues = {};
         state.criteria.forEach(c => {
-          if (c.formula && c.formula.trim()) return; // valor é sempre calculado, nunca digitado
+          if (isAggregate(c) || (c.formula && c.formula.trim())) return; // valor é sempre calculado, nunca digitado
           if (chosenModel && criterionScope(c) === 'model') return; // valor herdado do modelo
           const inp = document.getElementById(`inputCar_${c.id}`);
           const val = inp && inp.value !== '' ? parseFloat(inp.value) : (c.min + c.max) / 2;
