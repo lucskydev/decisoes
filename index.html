@@ -2107,6 +2107,15 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
       <div class="btn-row" style="justify-content:flex-start;">
         <button class="action-btn" id="btnAddCriterion">+ Novo Critério</button>
       </div>
+      <div class="control-deck">
+        <span class="lumi-body-m lumi-body-m-emphasized">Adicionar Critérios por Texto</span>
+        <div class="model-hint">Digite só os <b>nomes</b> dos critérios, separados por <b>;</b> (exemplo: <code>Conforto; Garantia; Altura do solo</code>). Cada um entra como tipo <b>Valor</b>, peso <b>5</b>, escala de <b>1 a 10</b>, <b>maior valor é melhor</b>, origem <b>do item</b>, sem fórmula e sem observações. Depois é só ajustar no próprio card do critério.</div>
+        <textarea class="note-input model-bulk-input" id="inputCriteriaBulk" rows="3" spellcheck="false" placeholder="Nome 1; Nome 2; Nome 3"></textarea>
+        <div class="model-bulk-msg is-hidden" id="criteriaBulkMsg" role="status"></div>
+        <div class="btn-row">
+          <button class="action-btn" id="btnImportCriteriaText">Adicionar Critérios</button>
+        </div>
+      </div>
     </div>
 
     <!-- Tab 3: Manage Vehicles -->
@@ -3164,6 +3173,37 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
 
       if (grid) grid.innerHTML = html;
     }
+
+    // ---- Adicionar vários critérios a partir de texto (nomes separados por ;) ----
+    function addCriteriaFromText() {
+      const ta = document.getElementById('inputCriteriaBulk');
+      const msg = document.getElementById('criteriaBulkMsg');
+      if (!ta || !msg) return;
+      const show = (html, isError) => { msg.innerHTML = html; msg.classList.remove('is-hidden'); msg.classList.toggle('is-error', !!isError); };
+      const names = ta.value.split(/[;\r\n]+/).map(n => n.replace(/\s+/g, ' ').trim()).filter(Boolean);
+      if (!names.length) { show('Digite ao menos um nome de critério.', true); return; }
+      const key = n => n.toLowerCase();
+      const seen = new Set(state.criteria.map(c => key(c.name)));
+      const errors = [];
+      names.forEach(n => {
+        if (seen.has(key(n))) errors.push(`“${n}” já existe (os nomes de critérios não podem se repetir, pois as fórmulas usam o nome).`);
+        seen.add(key(n));
+      });
+      if (errors.length) {
+        show('<b>Nada foi adicionado.</b> Corrija e tente de novo:<ul>' + errors.map(e => `<li>${esc(e)}</li>`).join('') + '</ul>', true);
+        return;
+      }
+      const stamp = Date.now();
+      names.forEach((name, i) => {
+        const id = 'crit_' + stamp + '_' + i;
+        state.criteria.push({ id, name, weight: 5, min: 1, max: 10, higherIsBetter: true, scope: 'item', note: '' });
+        state.vehicles.forEach(v => { if (!v.values) v.values = {}; v.values[id] = 5; });
+      });
+      ta.value = '';
+      updateViz();
+      show(`${names.length} ${names.length === 1 ? 'critério adicionado' : 'critérios adicionados'} ao final da lista.`, false);
+    }
+    document.getElementById('btnImportCriteriaText')?.addEventListener('click', addCriteriaFromText);
 
     // Expande/recolhe um critério (sem recriar a lista; só cards recolhidos podem ser arrastados)
     window.toggleCriterionCard = function(cid) {
