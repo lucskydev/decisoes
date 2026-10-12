@@ -1439,6 +1439,15 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
     .agg-member { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; }
     /* ===== Relatório PDF ===== */
     .print-btn { margin-left: auto; align-self: flex-start; min-height: 34px; padding: 0 14px; }
+    /* ===== Importação de modelos por texto ===== */
+    .field-num { display: inline-block; min-width: 1.6em; font-weight: 700; color: var(--accent, #c9a96e); }
+    .model-bulk-input { width: 100%; font-family: var(--ff-mono, ui-monospace, monospace); font-size: 13px; min-height: 120px; }
+    .bulk-fields { margin: 6px 0 6px 22px; padding: 0; columns: 2; column-gap: 24px; }
+    .bulk-fields li { break-inside: avoid; }
+    .model-hint code { font-family: var(--ff-mono, ui-monospace, monospace); font-size: 12px; }
+    .model-bulk-msg { margin: 8px 0 0; font-size: 13px; }
+    .model-bulk-msg.is-error { color: #dc2626; }
+    .model-bulk-msg ul { margin: 4px 0 0 18px; padding: 0; }
     /* ===== Modelos / vínculo ===== */
     .is-hidden { display: none !important; }
     .analysis-switches { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 4px 0; }
@@ -2076,6 +2085,15 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
         </div>
         <div class="btn-row">
           <button class="action-btn" id="btnSaveModel">Adicionar Modelo</button>
+        </div>
+      </div>
+      <div class="control-deck">
+        <span class="lumi-body-m lumi-body-m-emphasized">Cadastrar Modelos por Texto</span>
+        <div class="model-hint" id="modelBulkHelp"></div>
+        <textarea class="note-input model-bulk-input" id="inputModelBulk" rows="6" spellcheck="false" placeholder="Um modelo por linha, campos separados por ponto e vírgula (;)"></textarea>
+        <div class="model-bulk-msg is-hidden" id="modelBulkMsg" role="status"></div>
+        <div class="btn-row">
+          <button class="action-btn" id="btnImportModelsText">Importar Modelos</button>
         </div>
       </div>
     </div>
@@ -3451,28 +3469,107 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
     }
 
     // ================= Aba Modelos =================
+    // Critérios que o formulário de novo modelo pede (mesma ordem usada na importação por texto)
+    function modelFormCriteria() {
+      return state.criteria.filter(c => criterionScope(c) === 'model' && !hasFormula(c) && !isAggregate(c));
+    }
+
+    // Ajuda da importação por texto: lista numerada dos campos, na ordem esperada
+    function renderModelBulkHelp() {
+      const box = document.getElementById('modelBulkHelp');
+      if (!box) return;
+      const crit = modelFormCriteria();
+      const names = ['Nome do Modelo', ...crit.map(c => c.name), 'Observações'];
+      const ex = ['Honda CR-V 2006–2011', ...crit.map(c => String(Math.round((c.min + c.max) / 2 * 10) / 10).replace('.', ',')), 'Exemplo'];
+      if (crit.length > 1) ex[2] = ' ';   // mostra um campo vazio no exemplo
+      box.innerHTML = `Digite <b>um modelo por linha</b>, com os campos separados por <b>;</b> na ordem numerada abaixo (a mesma do formulário acima). ` +
+        `Campo vazio (<code>;;</code> ou <code>; ;</code>) = sem informação: usa o ponto médio do critério, como no formulário. Aceita vírgula ou ponto nos decimais.` +
+        `<ol class="bulk-fields">${names.map(n => `<li>${esc(n)}</li>`).join('')}</ol>` +
+        `<div>Exemplo de linha: <code>${esc(ex.join('; '))}</code></div>`;
+    }
+
+    // Cria um modelo (usado pelo formulário e pela importação por texto)
+    function addModel(name, values, note) {
+      const id = 'm_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      state.models.push({ id, name, note: note || '', values, images: { main: null, detail: null } });
+      return id;
+    }
+
+    // Lê o texto (um modelo por linha, campos separados por ;) e devolve { models, errors }
+    function parseModelsText(text) {
+      const crit = modelFormCriteria();
+      const maxFields = crit.length + 2;   // nome + critérios + observações
+      const models = [], errors = [];
+      String(text).split(/\r?\n/).forEach((line, idx) => {
+        if (!line.trim()) return;
+        const ln = idx + 1;
+        let fields = line.split(';').map(f => f.trim());
+        while (fields.length > maxFields && fields[fields.length - 1] === '') fields.pop();   // ; sobrando no fim
+        if (fields.length > maxFields) {
+          errors.push(`Linha ${ln}: ${fields.length} campos, mas o máximo é ${maxFields} (nome, ${crit.length} critério(s) e observações).`);
+          return;
+        }
+        if (!fields[0]) { errors.push(`Linha ${ln}: o nome do modelo (campo 1) está vazio.`); return; }
+        const values = {};
+        let bad = false;
+        crit.forEach((c, i) => {
+          let raw = fields[i + 1];
+          if (raw === undefined || raw === '') { values[c.id] = (c.min + c.max) / 2; return; }
+          raw = raw.replace(/\s/g, '');
+          if (raw.includes(',')) raw = raw.replace(/\./g, '').replace(',', '.');
+          if (!/^[-+]?\d+(\.\d+)?$/.test(raw)) {
+            errors.push(`Linha ${ln}, campo ${i + 2} (${c.name}): “${fields[i + 1]}” não é um número.`);
+            bad = true; return;
+          }
+          values[c.id] = parseFloat(raw);
+        });
+        if (bad) return;
+        models.push({ name: fields[0], values, note: fields[crit.length + 1] || '' });
+      });
+      return { models, errors };
+    }
+
+    function importModelsFromText() {
+      const ta = document.getElementById('inputModelBulk');
+      const msg = document.getElementById('modelBulkMsg');
+      if (!ta || !msg) return;
+      const show = (html, isError) => { msg.innerHTML = html; msg.classList.remove('is-hidden'); msg.classList.toggle('is-error', !!isError); };
+      if (!ta.value.trim()) { show('Digite ao menos uma linha com o nome do modelo.', true); return; }
+      const { models, errors } = parseModelsText(ta.value);
+      if (errors.length) {
+        show('<b>Nada foi importado.</b> Corrija e tente de novo:<ul>' + errors.map(e => `<li>${esc(e)}</li>`).join('') + '</ul>', true);
+        return;
+      }
+      if (!models.length) { show('Nenhuma linha com modelo foi encontrada.', true); return; }
+      models.forEach(m => addModel(m.name, m.values, m.note));
+      ta.value = '';
+      updateViz();
+      show(`${models.length} ${models.length === 1 ? 'modelo adicionado' : 'modelos adicionados'}.`, false);
+    }
+    document.getElementById('btnImportModelsText')?.addEventListener('click', importModelsFromText);
+
     function renderModelForm() {
       const formGrid = document.getElementById('newModelForm');
       if (!formGrid) return;
+      renderModelBulkHelp();
       const prev = {};
       formGrid.querySelectorAll('input, textarea').forEach(el => { if (el.id) prev[el.id] = el.value; });
 
       let html = `
         <div class="form-group">
-          <label class="lumi-body-s">Nome do Modelo</label>
+          <label class="lumi-body-s"><span class="field-num">1.</span> Nome do Modelo</label>
           <input type="text" class="lumi-input" id="inputModelName" placeholder="Ex: Honda CR-V 2006–2011">
         </div>`;
-      state.criteria.forEach(c => {
-        if (criterionScope(c) !== 'model' || hasFormula(c)) return;
+      modelFormCriteria().forEach((c, i) => {
         html += `
         <div class="form-group">
-          <label class="lumi-body-s">${esc(c.name)}${noteIcon(c.note)}</label>
+          <label class="lumi-body-s"><span class="field-num">${i + 2}.</span> ${esc(c.name)}${noteIcon(c.note)}</label>
           <input type="number" class="lumi-input" id="inputModel_${c.id}" placeholder="${c.min} - ${c.max}" step="0.1">
         </div>`;
       });
       html += `
         <div class="form-group field-full">
-          <label class="lumi-body-s">Observações</label>
+          <label class="lumi-body-s"><span class="field-num">${modelFormCriteria().length + 2}.</span> Observações</label>
           <textarea class="note-input" id="inputModelNotes" placeholder="Anotações sobre este modelo (opcional)"></textarea>
         </div>`;
       formGrid.innerHTML = html;
@@ -5066,19 +5163,12 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
         }
         const values = {};
         state.criteria.forEach(c => {
-          if (criterionScope(c) !== 'model' || hasFormula(c)) return;
+          if (criterionScope(c) !== 'model' || hasFormula(c) || isAggregate(c)) return;
           const inp = document.getElementById(`inputModel_${c.id}`);
           values[c.id] = inp && inp.value !== '' ? parseFloat(inp.value) : (c.min + c.max) / 2;
         });
         const notesInput = document.getElementById('inputModelNotes');
-        const newId = 'm_' + Date.now();
-        state.models.push({
-          id: newId,
-          name,
-          note: notesInput ? notesInput.value.trim() : '',
-          values,
-          images: { main: null, detail: null }
-        });
+        const newId = addModel(name, values, notesInput ? notesInput.value.trim() : '');
         modelCardOpen.add(newId);   // abre o novo modelo para já incluir fotos
         if (nameInput) nameInput.value = '';
         if (notesInput) notesInput.value = '';
